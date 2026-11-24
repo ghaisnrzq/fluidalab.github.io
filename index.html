@@ -1,0 +1,2787 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FluidaLab — Media Belajar Fisika Interaktif</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            ocean: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #061320;
+      color: #f1f5f9;
+      overflow-x: hidden;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 999px;
+      background: #1e293b;
+      border: 1px solid #334155;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      margin-top: -6px;
+      background-color: #38bdf8;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background-color: #7dd3fc;
+    }
+
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.76);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.16);
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      border-radius: 1rem;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 20%, #0f2942 0%, #071322 100%);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-sky-500/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Brand -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-teal-500 flex items-center justify-center shadow-lg shadow-sky-500/25">
+            <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-sky-300 via-cyan-200 to-teal-300 bg-clip-text text-transparent">
+              FluidaLab
+            </h1>
+            <p class="text-[11px] text-slate-400 hidden sm:block">Belajar Fisika Fluida dari Nol hingga Mahir</p>
+          </div>
+        </div>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-1.5 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800" aria-label="Navigasi Utama">
+          <button onclick="switchMainTab('pemula')" id="nav-pemula" class="main-tab-btn px-3.5 py-2 rounded-xl text-sm font-semibold transition-all bg-sky-500 text-slate-950 shadow-md shadow-sky-500/25">
+            1. Belajar dari Nol
+          </button>
+          <button onclick="switchMainTab('statis')" id="nav-statis" class="main-tab-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/70 transition-all">
+            2. Lab Statis
+          </button>
+          <button onclick="switchMainTab('dinamis')" id="nav-dinamis" class="main-tab-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/70 transition-all">
+            3. Lab Dinamis
+          </button>
+          <button onclick="switchMainTab('materi')" id="nav-materi" class="main-tab-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/70 transition-all">
+            4. Kamus Rumus
+          </button>
+          <button onclick="switchMainTab('kuis')" id="nav-kuis" class="main-tab-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/70 transition-all flex items-center gap-1.5">
+            <span>5. Kuis Latihan</span>
+            <span class="px-1.5 py-0.5 text-[10px] rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">20 Soal</span>
+          </button>
+        </nav>
+
+        <!-- Sound Toggle -->
+        <div class="flex items-center gap-2">
+          <button id="sound-toggle-btn" onclick="toggleSound()" title="Suara Efek Lab" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-sky-300 border border-slate-700 transition-all">
+            <svg id="icon-sound-on" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
+            <svg id="icon-sound-off" class="w-5 h-5 hidden text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Bar -->
+      <div class="flex md:hidden overflow-x-auto gap-1.5 pb-3 pt-1 no-scrollbar">
+        <button onclick="switchMainTab('pemula')" id="m-nav-pemula" class="m-tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-500 text-slate-950">
+          1. Belajar dari Nol
+        </button>
+        <button onclick="switchMainTab('statis')" id="m-nav-statis" class="m-tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300">
+          2. Lab Statis
+        </button>
+        <button onclick="switchMainTab('dinamis')" id="m-nav-dinamis" class="m-tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300">
+          3. Lab Dinamis
+        </button>
+        <button onclick="switchMainTab('materi')" id="m-nav-materi" class="m-tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300">
+          4. Kamus Rumus
+        </button>
+        <button onclick="switchMainTab('kuis')" id="m-nav-kuis" class="m-tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300">
+          5. Kuis (20)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification Container (Replaces alert()) -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+    <!-- =================================================================== -->
+    <!-- SECTION 0: BELAJAR DARI NOL (PANDUAN LENGKAP 8 BAB UNTUK PEMULA)    -->
+    <!-- =================================================================== -->
+    <section id="section-pemula" class="space-y-10 max-w-5xl mx-auto">
+
+      <!-- Welcome Hero Banner (Calm, Encouraging, No Rush to Lab) -->
+      <div class="glass-panel rounded-3xl p-6 sm:p-9 border border-sky-400/25 bg-gradient-to-br from-slate-900/95 via-sky-950/45 to-slate-900/95 space-y-5">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-400/30">
+          🌱 Zona Belajar Santai • Khusus Pemula dari Nol
+        </div>
+        <h2 class="text-2xl sm:text-4xl font-extrabold text-white leading-tight">
+          Selamat Datang! Mari Pahami Fisika Fluida Pelan-Pelan dari Awal Banget.
+        </h2>
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+          Tidak apa-apa kalau saat ini kamu benar-benar belum tahu apa-apa tentang fluida, tekanan, atau rumus fisika. Kamu <strong>tidak perlu buru-buru masuk ke laboratorium simulasi atau mengerjakan soal</strong>.
+        </p>
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+          Anggap saja halaman ini seperti buku cerita bergambar. Kita akan membahas semuanya memakai <strong>bahasa sehari-hari dan benda-benda di rumah</strong> (seperti gelas air, sepatu, selang taman, bak mandi, hingga pesawat terbang) dalam <strong>8 Bab Singkat</strong> yang mudah dicerna.
+        </p>
+
+        <!-- Chapter Quick Jump Pills -->
+        <div class="pt-2 border-t border-slate-800/80">
+          <p class="text-xs font-semibold text-slate-400 mb-2.5">Daftar Isi Bacaan (Urut dari Bab 1 sampai Bab 8):</p>
+          <div class="flex flex-wrap gap-2">
+            <a href="#bab-1" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-sky-500/20 hover:text-sky-300 text-slate-300 border border-slate-700 transition-all">Bab 1: Apa Itu Fluida?</a>
+            <a href="#bab-2" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-sky-500/20 hover:text-sky-300 text-slate-300 border border-slate-700 transition-all">Bab 2: Diam vs Mengalir</a>
+            <a href="#bab-3" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-sky-500/20 hover:text-sky-300 text-slate-300 border border-slate-700 transition-all">Bab 3: Kamus 7 Istilah Awam</a>
+            <a href="#bab-4" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-sky-500/20 hover:text-sky-300 text-slate-300 border border-slate-700 transition-all">Bab 4: Tekanan di Dalam Air</a>
+            <a href="#bab-5" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-sky-500/20 hover:text-sky-300 text-slate-300 border border-slate-700 transition-all">Bab 5: Rahasia Dongkrak (Pascal)</a>
+            <a href="#bab-6" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-sky-500/20 hover:text-sky-300 text-slate-300 border border-slate-700 transition-all">Bab 6: Mengapung & Tenggelam</a>
+            <a href="#bab-7" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-sky-500/20 hover:text-sky-300 text-slate-300 border border-slate-700 transition-all">Bab 7: Selang Air & Pesawat</a>
+            <a href="#bab-8" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-sky-500/20 hover:text-sky-300 text-slate-300 border border-slate-700 transition-all">Bab 8: Mitos vs Fakta Pemula</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- BAB 1: APA SEBENARNYA FLUIDA ITU?                                 -->
+      <!-- ================================================================= -->
+      <article id="bab-1" class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5 border-t-4 border-t-sky-400">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-xl bg-sky-500 text-slate-950 font-extrabold text-xs">BAB 1</span>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white">Kenalan Dulu: Apa Sebenarnya Arti Kata "Fluida"?</h3>
+        </div>
+
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+          Di dunia ini, benda-benda di sekitar kita secara umum dibagi menjadi tiga wujud: <strong>Padat</strong>, <strong>Cair</strong>, dan <strong>Gas</strong>. Nah, dalam ilmu fisika, dua wujud terakhir—yaitu <strong>Zat Cair dan Zat Gas</strong>—digabung dan diberi satu nama panggilan khusus, yaitu <strong>FLUIDA</strong> (berasal dari kata <em>fluid</em> yang artinya <em>mengalir</em>).
+        </p>
+
+        <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-3">
+          <h4 class="font-bold text-sky-300 text-sm sm:text-base">🔍 Kenapa Zat Padat Tidak Bisa Mengalir, Sedangkan Fluida Bisa?</h4>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Bayangkan partikel-partikel penyusun benda itu seperti sekumpulan orang di lapangan:
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+            <div class="bg-slate-950/90 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-2xl">🧱</span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-rose-500/15 text-rose-300">Bukan Fluida</span>
+              </div>
+              <h5 class="font-bold text-white text-sm">Zat Padat (Batu, Kayu, Besi)</h5>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Partikelnya berbaris rapat dan <strong>berpegangan tangan sangat erat</strong>. Kalau kamu menaruh dadu kayu ke dalam gelas, bentuknya tetap dadu. Ia kaku dan mempertahankan bentuknya sendiri.
+              </p>
+            </div>
+
+            <div class="bg-slate-950/90 p-4 rounded-xl border border-sky-500/30 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-2xl">💧</span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300">Fluida #1</span>
+              </div>
+              <h5 class="font-bold text-white text-sm">Zat Cair (Air, Minyak, Sirup)</h5>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Partikelnya masih berdekatan, tapi <strong>pegangannya longgar dan licin</strong> sehingga bisa saling menggelincir. Akibatnya, air bisa mengalir dari tempat tinggi ke rendah dan bentuknya selalu meniru bentuk wadahnya (gelas, botol, atau mangkuk).
+              </p>
+            </div>
+
+            <div class="bg-slate-950/90 p-4 rounded-xl border border-cyan-500/30 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-2xl">🌬️</span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300">Fluida #2</span>
+              </div>
+              <h5 class="font-bold text-white text-sm">Zat Gas (Udara, Angin, Asap)</h5>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Partikelnya <strong>tidak berpegangan sama sekali dan bebas terbang ke mana-mana</strong>. Udara bisa mengalir masuk lewat celah pintu, mengisi seluruh sudut kamar, bahkan bisa ditekan/dimampatkan ke dalam ban sepeda!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-sky-500/10 border border-sky-400/30 rounded-2xl p-4 text-xs sm:text-sm text-sky-200">
+          <strong>📌 Kesimpulan Bab 1:</strong> Setiap kali mendengar kata <strong>"Fluida"</strong>, langsung bayangkan <strong>Cairan (seperti air/minyak)</strong> atau <strong>Gas (seperti udara/angin)</strong>. Keduanya disebut fluida karena sama-sama bisa mengalir dan berubah bentuk mengikuti wadahnya!
+        </div>
+      </article>
+
+      <!-- ================================================================= -->
+      <!-- BAB 2: DUA KEADAAN FLUIDA (STATIS VS DINAMIS)                     -->
+      <!-- ================================================================= -->
+      <article id="bab-2" class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5 border-t-4 border-t-teal-400">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-xl bg-teal-400 text-slate-950 font-extrabold text-xs">BAB 2</span>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white">Dua Sifat Utama: Fluida yang Diam vs Fluida yang Bergerak</h3>
+        </div>
+
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+          Perilaku air saat diam di dalam bak mandi ternyata sangat berbeda dengan perilaku air saat menyemprot keluar dari selang. Karena itulah, pelajaran fisika fluida dibagi menjadi <strong>2 bagian besar</strong> saja:
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-sky-500/25 space-y-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-3xl">🥛</span>
+              <div>
+                <h4 class="font-bold text-sky-300 text-base sm:text-lg">1. Fluida Statis (Fluida Diam)</h4>
+                <span class="text-xs text-slate-400">"Statis" artinya diam di tempat</span>
+              </div>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Ini adalah kondisi ketika air atau udara berada dalam keadaan <strong>tenang, diam, dan tidak mengalir ke mana-mana</strong>.
+            </p>
+            <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1.5 text-xs text-slate-300">
+              <p class="font-bold text-white">Contoh sehari-hari:</p>
+              <p>• Air minum di dalam gelas di atas meja.</p>
+              <p>• Air tenang di dalam kolam renang atau akuarium.</p>
+              <p>• Oli di dalam tabung dongkrak mobil.</p>
+              <p>• Telur yang dicelupkan ke dalam panci berisi air.</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-cyan-500/25 space-y-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-3xl">🌊</span>
+              <div>
+                <h4 class="font-bold text-cyan-300 text-base sm:text-lg">2. Fluida Dinamis (Fluida Mengalir)</h4>
+                <span class="text-xs text-slate-400">"Dinamis" artinya bergerak terus-menerus</span>
+              </div>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Ini adalah kondisi ketika cairan atau gas sedang <strong>berpindah tempat, mengalir, atau bertiup</strong> dari satu titik ke titik lain.
+            </p>
+            <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1.5 text-xs text-slate-300">
+              <p class="font-bold text-white">Contoh sehari-hari:</p>
+              <p>• Air yang keluar dari keran atau selang penyiram tanaman.</p>
+              <p>• Aliran sungai yang mengalir dari gunung menuju laut.</p>
+              <p>• Angin yang bertiup melewati sayap pesawat terbang.</p>
+              <p>• Aliran darah yang dipompa jantung melewati pembuluh darah.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ================================================================= -->
+      <!-- BAB 3: KAMUS LENGKAP 7 ISTILAH AWAM                               -->
+      <!-- ================================================================= -->
+      <article id="bab-3" class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5 border-t-4 border-t-amber-400">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-xl bg-amber-400 text-slate-950 font-extrabold text-xs">BAB 3</span>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white">Kamus 7 Istilah Penting (Diterjemahkan ke Bahasa Sehari-hari)</h3>
+        </div>
+
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+          Orang awam sering pusing belajar fisika bukan karena materinya sulit, melainkan karena <strong>istilah dan huruf simbolnya terdengar asing</strong>. Mari kita terjemahkan 7 istilah utama ini memakai perumpamaan nyata:
+        </p>
+
+        <div class="space-y-4">
+          <!-- Term 1: Massa Jenis -->
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h4 class="font-bold text-white text-base">1. Massa Jenis • Simbol: <span class="font-mono text-amber-300">ρ</span> (dibaca "rho", bukan huruf p)</h4>
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-300">Arti Awam: Tingkat Kepadatan Zat</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              <strong>Perumpamaan:</strong> Bayangkan ada dua kardus dengan ukuran sama persis (misalnya ukuran kardus mi instan). Kardus pertama diisi penuh <strong>kapas</strong>, sedangkan kardus kedua diisi penuh <strong>besi</strong>. Ukurannya sama, tapi kardus besi jauh lebih berat karena partikel besi jauh lebih padat! Nah, seberapa berat suatu zat dalam ukuran ruang yang sama itulah yang disebut <strong>Massa Jenis</strong>.
+            </p>
+            <p class="text-xs text-slate-400">
+              <em>Contoh nyata:</em> Air punya massa jenis <span class="font-mono text-sky-300">1.000 kg/m³</span>, sedangkan minyak goreng punya massa jenis sekitar <span class="font-mono text-amber-300">800 kg/m³</span>. Karena minyak lebih "renggang/ringan" daripada air, minyak selalu mengapung di atas kuah soto!
+            </p>
+          </div>
+
+          <!-- Term 2: Tekanan -->
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h4 class="font-bold text-white text-base">2. Tekanan • Simbol: <span class="font-mono text-sky-300">P</span> (dari kata <em>Pressure</em>)</h4>
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-sky-500/15 text-sky-300">Arti Awam: Dorongan yang Terpusat</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              <strong>Perumpamaan:</strong> Bayangkan dua orang dengan berat badan sama berdiri di atas tanah berlumpur. Orang A memakai <strong>sepatu kets datar</strong>, sedangkan Orang B memakai <strong>sepatu hak tinggi (stiletto) yang runcing</strong>. Kaki Orang B pasti amblas masuk ke lumpur! Kenapa? Karena seluruh berat badannya terkumpul pada ujung hak sepatu yang sangat kecil. Itulah <strong>Tekanan</strong>: besarnya dorongan dibagi luas bidang yang ditekan.
+            </p>
+            <p class="text-xs text-slate-400">
+              <em>Satuannya:</em> <strong>Pascal (Pa)</strong>. Kalau angkanya ribuan, sering ditulis <strong>kPa</strong> (kilopascal, 1 kPa = 1.000 Pa).
+            </p>
+          </div>
+
+          <!-- Term 3: Tekanan Atmosfer -->
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h4 class="font-bold text-white text-base">3. Tekanan Udara Luar (Atmosfer) • Simbol: <span class="font-mono text-indigo-300">P₀</span></h4>
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-indigo-500/15 text-indigo-300">Arti Awam: Tindihan Lautan Udara di Atas Kita</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              <strong>Perumpamaan:</strong> Kita sering lupa bahwa udara itu punya berat! Sebenarnya, manusia dan semua benda di Bumi sedang hidup di dasar "lautan udara" setinggi puluhan kilometer. Udara di atas kepala kita terus menekan ke segala arah dengan kekuatan sekitar <strong>101.300 Pascal (1 atm)</strong>.
+            </p>
+            <p class="text-xs text-slate-400">
+              <em>Pertanyaan awam:</em> "Kalau udara menekan sekuat itu, kenapa tubuh kita tidak gepeng?" Jawabannya: karena di dalam tubuh kita (paru-paru dan pembuluh darah) juga ada udara dan cairan yang mendorong keluar dengan kekuatan yang sama persis, sehingga seimbang!
+            </p>
+          </div>
+
+          <!-- Term 4: Gaya -->
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h4 class="font-bold text-white text-base">4. Gaya • Simbol: <span class="font-mono text-rose-300">F</span> (dari kata <em>Force</em>)</h4>
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-rose-500/15 text-rose-300">Arti Awam: Tarikan atau Dorongan</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              <strong>Perumpamaan:</strong> Dalam bahasa gaul, gaya artinya penampilan. Tapi di fisika, gaya artinya murni <strong>tarikan atau dorongan</strong> (diukur dalam satuan <strong>Newton / N</strong>). Saat kamu mendorong meja, kamu memberi gaya. Saat Bumi menarik apel jatuh ke tanah, itu disebut <strong>Gaya Berat (<span class="font-mono text-rose-300">W</span>)</strong>. Saat air mendorong tubuh perenang ke atas, itu disebut <strong>Gaya Apung (<span class="font-mono text-emerald-300">Fₐ</span>)</strong>.
+            </p>
+          </div>
+
+          <!-- Term 5: Luas Penampang -->
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h4 class="font-bold text-white text-base">5. Luas Penampang • Simbol: <span class="font-mono text-teal-300">A</span> (dari kata <em>Area</em>)</h4>
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-teal-500/15 text-teal-300">Arti Awam: Lebar Lubang / Permukaan</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              <strong>Perumpamaan:</strong> Bayangkan kamu memotong pipa paralon atau sedotan minuman secara melintang, lalu melihat bagian lubangnya yang berbentuk lingkaran. Seberapa lebar permukaan lingkaran lubang itulah yang disebut <strong>Luas Penampang</strong> (satuannya <span class="font-mono">m²</span> atau <span class="font-mono">cm²</span>). Mulut ember punya luas penampang besar, sedangkan lubang sedotan punya luas penampang kecil.
+            </p>
+          </div>
+
+          <!-- Term 6: Debit Aliran -->
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h4 class="font-bold text-white text-base">6. Debit Aliran • Simbol: <span class="font-mono text-cyan-300">Q</span></h4>
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-cyan-500/15 text-cyan-300">Arti Awam: Banyaknya Air yang Lewat Tiap Detik</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              <strong>Perumpamaan:</strong> Misalkan kamu menampung air keran ke dalam botol 1 liter. Jika botol terisi penuh dalam 1 detik, debitnya adalah <strong>1 liter per detik</strong>. Kalau kerannya dibuka setengah sehingga butuh 2 detik untuk penuh, debitnya turun menjadi <strong>0,5 liter per detik</strong>. Jadi debit hanyalah ukuran <em>seberapa banyak volume cairan yang mengalir setiap detiknya</em>.
+            </p>
+          </div>
+
+          <!-- Term 7: Viskositas -->
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h4 class="font-bold text-white text-base">7. Viskositas • Simbol: <span class="font-mono text-purple-300">η</span> (dibaca "eta")</h4>
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-purple-500/15 text-purple-300">Arti Awam: Kekentalan / Rasa "Seret" Cairan</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              <strong>Perumpamaan:</strong> Coba miringkan sendok berisi <strong>air putih</strong> dan sendok berisi <strong>madu kental</strong>. Air putih langsung meluncur jatuh dengan cepat karena viskositasnya rendah (encer). Madu mengalir pelan sekali karena viskositasnya tinggi (kental)—partikel-partikel madu saling bergesekan dan "malas" bergerak.
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <!-- ================================================================= -->
+      <!-- BAB 4: TEKANAN HIDROSTATIS                                        -->
+      <!-- ================================================================= -->
+      <article id="bab-4" class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5 border-t-4 border-t-sky-400">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-xl bg-sky-500 text-slate-950 font-extrabold text-xs">BAB 4</span>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white">Mengapa Makin Dalam Menyelam, Telinga Makin Sakit? (Tekanan Hidrostatis)</h3>
+        </div>
+
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+          Pernahkah kamu berenang dan menyelam sampai menyentuh dasar kolam renang yang dalam? Pasti gendang telingamu terasa berdengung atau tertekan. Mengapa hal itu terjadi?
+        </p>
+
+        <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-4">
+          <h4 class="font-bold text-sky-300 text-base">📚 Analogi "Tumpukan Buku di Atas Telapak Tangan"</h4>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Bayangkan kamu menengadahkan telapak tanganmu. Kalau ditaruh <strong>1 buku tulis</strong> di atas tanganmu, rasanya ringan sekali. Kalau ditumpuk <strong>5 buku tebal</strong>, tanganmu mulai pegal. Kalau ditumpuk <strong>30 buku</strong>, tanganmu pasti tertekan berat sekali!
+          </p>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Air di kolam renang bekerja persis seperti tumpukan buku tersebut! Air memiliki berat karena ditarik gravitasi Bumi. Saat kamu berada di kedalaman 1 meter, kamu hanya "menggendong" air setinggi 1 meter di atas kepalamu. Tapi saat menyelam ke kedalaman 5 meter, ada kolom air setinggi 5 meter di atasmu yang beratnya 5 kali lipat menekan seluruh tubuhmu dari segala arah (atas, bawah, kiri, kanan).
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1.5">
+              <p class="font-bold text-emerald-300 text-xs sm:text-sm">✅ 3 Hal yang Memperbesar Tekanan Air:</p>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                <li><strong>Kedalaman (<span class="font-mono">h</span>):</strong> Makin dalam dari permukaan, tekanan makin besar.</li>
+                <li><strong>Jenis Cairan (<span class="font-mono">ρ</span>):</strong> Menyelam di air laut (lebih padat karena garam) tekanannya lebih besar daripada di air tawar pada kedalaman sama.</li>
+                <li><strong>Gravitasi (<span class="font-mono">g</span>):</strong> Di planet dengan gravitasi lebih kuat, berat air makin besar.</li>
+              </ul>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1.5">
+              <p class="font-bold text-amber-300 text-xs sm:text-sm">🤯 Fakta Unik yang Sering Bikin Kaget Pemula:</p>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Tekanan air <strong>TIDAK PEDULI seberapa lebar kolamnya!</strong> Tekanan air di dasar sedotan vertikal setinggi 2 meter sama persis dengan tekanan air di dasar danau raksasa pada kedalaman 2 meter! Yang menentukan hanyalah <strong>kedalaman vertikal dari permukaan</strong>, bukan seberapa banyak air di samping kiri-kananmu.
+              </p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ================================================================= -->
+      <!-- BAB 5: HUKUM PASCAL (DONGKRAK HIDROLIK)                           -->
+      <!-- ================================================================= -->
+      <article id="bab-5" class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5 border-t-4 border-t-teal-400">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-xl bg-teal-400 text-slate-950 font-extrabold text-xs">BAB 5</span>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white">Rahasia Tenaga Raksasa dari Dorongan Tangan Kecil (Hukum Pascal)</h3>
+        </div>
+
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+          Bagaimana mungkin seorang petugas bengkel atau cuci mobil bisa mengangkat mobil sedan seberat <strong>1.500 kg</strong> hanya dengan menekan tombol atau menginjak pedal kecil dengan kakinya? Rahasianya ditemukan oleh ilmuwan Prancis bernama <strong>Blaise Pascal</strong>.
+        </p>
+
+        <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-4">
+          <h4 class="font-bold text-teal-300 text-base">💉 Eksperimen Pikiran: Suntikan Berisi Air</h4>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Bayangkan sebuah suntikan plastik (tanpa jarum) yang diisi penuh air, lalu ujung lubangnya kamu tutup rapat dengan jari. Sekarang coba dorong gagang suntikannya kuat-kuat. Apakah air di dalamnya bisa mengecil atau kempes seperti busa? <strong>Tidak bisa!</strong> Air hampir mustahil dimampatkan.
+          </p>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Sekarang bayangkan dua suntikan dihubungkan dengan selang berisi oli penuh:
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-950 p-4 rounded-xl border border-sky-500/30 space-y-1.5">
+              <p class="font-bold text-sky-300 text-xs sm:text-sm">Sisi Kiri: Pipa Sempit (Luas = 1 cm²)</p>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Kamu menekan piston kecil di sisi kiri dengan tenaga ringan sebesar <strong>10 Newton</strong>. Berarti setiap 1 cm² oli menerima tekanan sebesar <strong>10 N/cm²</strong>.
+              </p>
+            </div>
+            <div class="bg-slate-950 p-4 rounded-xl border border-teal-500/30 space-y-1.5">
+              <p class="font-bold text-teal-300 text-xs sm:text-sm">Sisi Kanan: Pipa Lebar (Luas = 100 cm²)</p>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Oli meneruskan tekanan <strong>10 N/cm²</strong> itu ke seluruh permukaan piston kanan. Karena piston kanan punya 100 kotak seluas 1 cm², maka tiap kotak didorong 10 N. Total dorongan ke atas menjadi <strong>100 × 10 N = 1.000 Newton (100 kali lipat!)</strong>.
+              </p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400">
+            <em>Catatan penting:</em> Tidak ada energi yang tercipta dari ketiadaan—supaya piston kanan naik 1 cm, piston kiri harus ditekan turun sejauh 100 cm (dipompa berkali-kali). Itulah cara kerja dongkrak hidrolik!
+          </p>
+        </div>
+      </article>
+
+      <!-- ================================================================= -->
+      <!-- BAB 6: HUKUM ARCHIMEDES (MENGAPUNG, MELAYANG, TENGGELAM)          -->
+      <!-- ================================================================= -->
+      <article id="bab-6" class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5 border-t-4 border-t-amber-400">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-xl bg-amber-400 text-slate-950 font-extrabold text-xs">BAB 6</span>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white">Misteri Benda Mengapung, Melayang, dan Tenggelam (Hukum Archimedes)</h3>
+        </div>
+
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+          Pernahkah kamu menggendong teman atau adikmu di dalam kolam renang? Rasanya jauh lebih ringan dibandingkan saat menggendongnya di darat! Itu karena air membantu mendorong tubuhnya ke atas. Dorongan ke atas oleh cairan ini disebut <strong>Gaya Apung</strong>.
+        </p>
+
+        <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-4">
+          <h4 class="font-bold text-amber-300 text-base">🛁 Analogi "Bak Mandi yang Terisi Penuh Sampai Bibir Bak"</h4>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Bayangkan sebuah bak mandi diisi air sampai benar-benar penuh ke bibir bak. Ketika kamu masuk ke dalam bak, tubuhmu butuh ruang—jadi mau tidak mau tubuhmu <strong>mengusir sebagian air hingga tumpah keluar bak</strong>.
+          </p>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Ilmuwan Yunani kuno bernama <strong>Archimedes</strong> menemukan aturan emas: <em>"Air tidak suka diusir! Besarnya tenaga air mendorong tubuhmu ke atas sama persis dengan berat air yang berhasil kamu tumpahkan."</em>
+          </p>
+
+          <!-- 3 Kondisi Benda -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+            <div class="bg-slate-950 p-4 rounded-xl border border-emerald-500/30 space-y-2">
+              <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-300">1. TERAPUNG</span>
+              <h5 class="font-bold text-white text-sm">Benda Lebih Renggang dari Air</h5>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Contoh: <strong>Kayu, gabus, botol kosong</strong>. Baru dicelupkan sebagian saja, berat air yang tumpah sudah sanggup mengimbangi seluruh berat kayu. Akhirnya kayu berhenti turun dan mengambang di permukaan.
+              </p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-sky-500/30 space-y-2">
+              <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/15 text-sky-300">2. MELAYANG</span>
+              <h5 class="font-bold text-white text-sm">Kepadatan Benda = Kepadatan Air</h5>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Contoh: <strong>Ikan yang mengatur gelembung renangnya atau kapal selam</strong>. Seluruh tubuh benda masuk ke air, dan gaya dorong air ke atas sama persis dengan berat benda. Benda diam melayang di tengah-tengah air (tidak naik dan tidak jatuh ke dasar).
+              </p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-rose-500/30 space-y-2">
+              <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/15 text-rose-300">3. TENGGELAM</span>
+              <h5 class="font-bold text-white text-sm">Benda Lebih Padat dari Air</h5>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Contoh: <strong>Batu kerikil, koin logam, paku besi</strong>. Meskipun seluruh tubuh batu sudah tercelup, berat air yang tergusur tetap kalah berat dibanding batu itu sendiri. Batu pun jatuh ke dasar wadah.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-amber-500/10 border border-amber-400/30 rounded-xl p-3.5 text-xs text-amber-200">
+            <strong>🚢 Lalu kenapa kapal pesiar raksasa dari baja bisa terapung?</strong> Karena bagian dalam lambung kapal dibuat <strong>berongga besar dan berisi udara</strong>! Jika digabung antara baja + ruang udara yang sangat luas di dalamnya, kepadatan rata-rata kapal menjadi jauh lebih ringan daripada air laut sehingga mampu mengusir jutaan liter air laut dan tetap mengapung!
+          </div>
+        </div>
+      </article>
+
+      <!-- ================================================================= -->
+      <!-- BAB 7: FLUIDA DINAMIS (KONTINUITAS & ASAS BERNOULLI)              -->
+      <!-- ================================================================= -->
+      <article id="bab-7" class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5 border-t-4 border-t-cyan-400">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-xl bg-cyan-400 text-slate-950 font-extrabold text-xs">BAB 7</span>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white">Rahasia Air Mengalir: Selang Dipencet & Pesawat Terbang (Fluida Dinamis)</h3>
+        </div>
+
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+          Sekarang saatnya air dan udara bergerak! Ada <strong>2 hukum utama</strong> yang mengatur aliran fluida di alam semesta. Keduanya terdengar ajaib, padahal sangat masuk akal:
+        </p>
+
+        <div class="space-y-4">
+          <!-- Konsep 1: Kontinuitas -->
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-2.5">
+            <h4 class="font-bold text-cyan-300 text-base">🚗 Aturan Pertama: Asas Kontinuitas (Analogi Jalan Tol Menyempit)</h4>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Bayangkan jalan tol <strong>4 lajur</strong> yang dilalui 100 mobil setiap menit. Tiba-tiba di depan ada perbaikan jalan sehingga jalan menyempit menjadi <strong>1 lajur saja</strong>. Supaya tidak terjadi penumpukan mobil (karena air tidak bisa ditumpuk/dimampatkan), maka saat melewati 1 lajur sempit itu setiap mobil <strong>wajib melaju 4 kali lebih cepat!</strong>
+            </p>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Persis seperti saat kamu menyiram tanaman dengan selang: ketika lubang ujung selang kamu pencet dengan jempol sehingga menyempit, air terpaksa berlari jauh lebih kencang dan memancar jauh ke depan! <strong>Makin sempit pipa, makin ngebut aliran fluidanya.</strong>
+            </p>
+          </div>
+
+          <!-- Konsep 2: Bernoulli -->
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-3">
+            <h4 class="font-bold text-emerald-300 text-base">✈️ Aturan Kedua: Asas Bernoulli (Makin Ngebut, Makin Lemah Tekanannya!)</h4>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Ini bagian yang sering mengejutkan pemula: <strong>Ketika fluida (air atau udara) bergerak semakin cepat, tekanan dorongnya ke samping justru semakin KECIL!</strong>
+            </p>
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs sm:text-sm text-slate-300">
+              <p class="font-bold text-white">🧪 Coba Bukti Nyata di Rumah (Eksperimen 5 Detik):</p>
+              <p>
+                Ambil <strong>dua lembar kertas HVS</strong>, pegang sejajar di depan mulutmu dengan jarak sekitar 3 cm di antara keduanya. Lalu <strong>tiup udara kencang tepat di celah tengah antara dua kertas itu</strong>.
+              </p>
+              <p class="text-emerald-300">
+                Apa yang terjadi? Dua kertas itu bukan menjauh, melainkan <strong>saling menempel mendekat!</strong> Kenapa? Karena udara yang kamu tiup di tengah bergerak cepat sehingga tekanannya turun, lalu udara tenang di sisi luar kertas (yang tekanannya lebih besar) mendorong kedua kertas saling merapat!
+              </p>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              <strong>Cara pesawat terbang terangkat:</strong> Bagian atas sayap pesawat dibuat melengkung sehingga udara di atas sayap meluncur lebih cepat daripada udara di bawah sayap. Karena udara di atas lebih cepat, tekanannya turun; sementara udara di bawah sayap punya tekanan lebih besar sehingga mendorong sayap pesawat terangkat ke langit!
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <!-- ================================================================= -->
+      <!-- BAB 8: 6 MITOS VS FAKTA YANG SERING MEMBINGUNGKAN PEMULA          -->
+      <!-- ================================================================= -->
+      <article id="bab-8" class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5 border-t-4 border-t-indigo-400">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-xl bg-indigo-400 text-slate-950 font-extrabold text-xs">BAB 8</span>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white">6 Jebakan Logika (Mitos vs Fakta) yang Sering Dialami Pemula</h3>
+        </div>
+
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+          Sebelum kamu melangkah lebih jauh, cek 6 hal berikut agar kamu tidak terjebak kesalahan berpikir yang sangat umum:
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 space-y-1.5">
+            <p class="text-xs font-bold text-rose-400">❌ Mitos #1: "Fluida itu cuma benda cair seperti air."</p>
+            <p class="text-xs sm:text-sm text-slate-300">
+              <strong class="text-emerald-400">✅ Fakta:</strong> Udara, angin, uap air, dan asap juga termasuk fluida karena zat gas juga bisa mengalir.
+            </p>
+          </div>
+
+          <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 space-y-1.5">
+            <p class="text-xs font-bold text-rose-400">❌ Mitos #2: "Kolam yang luas tekanannya lebih besar daripada sumur sempit."</p>
+            <p class="text-xs sm:text-sm text-slate-300">
+              <strong class="text-emerald-400">✅ Fakta:</strong> Pada kedalaman 3 meter, tekanan air di sumur sempit dan di laut luas sama persis. Lebar wadah tidak berpengaruh.
+            </p>
+          </div>
+
+          <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 space-y-1.5">
+            <p class="text-xs font-bold text-rose-400">❌ Mitos #3: "Benda tenggelam tidak punya gaya apung sama sekali."</p>
+            <p class="text-xs sm:text-sm text-slate-300">
+              <strong class="text-emerald-400">✅ Fakta:</strong> Batu yang tenggelam tetap didorong air ke atas (gaya apung), hanya saja dorongan airnya masih kalah kuat dibanding berat batu.
+            </p>
+          </div>
+
+          <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 space-y-1.5">
+            <p class="text-xs font-bold text-rose-400">❌ Mitos #4: "Benda berat pasti tenggelam, benda ringan pasti terapung."</p>
+            <p class="text-xs sm:text-sm text-slate-300">
+              <strong class="text-emerald-400">✅ Fakta:</strong> Bukan berat totalnya yang menentukan, melainkan <strong>massa jenis (kepadatan)</strong>. Jarum kecil dari besi tenggelam, sedangkan batang pohon besar dari kayu terapung.
+            </p>
+          </div>
+
+          <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 space-y-1.5">
+            <p class="text-xs font-bold text-rose-400">❌ Mitos #5: "Air yang mengalir cepat berarti tekanannya ke dinding pipa besar."</p>
+            <p class="text-xs sm:text-sm text-slate-300">
+              <strong class="text-emerald-400">✅ Fakta:</strong> Justru kebalikannya! Menurut Asas Bernoulli, makin cepat aliran fluida di pipa sempit, makin kecil tekanan statisnya ke dinding pipa.
+            </p>
+          </div>
+
+          <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 space-y-1.5">
+            <p class="text-xs font-bold text-rose-400">❌ Mitos #6: "Makin dalam suatu benda tenggelam, gaya apungnya makin besar."</p>
+            <p class="text-xs sm:text-sm text-slate-300">
+              <strong class="text-emerald-400">✅ Fakta:</strong> Begitu benda sudah 100% masuk di bawah permukaan air, volume air yang dipindahkannya tetap sama. Jadi di kedalaman 2 meter maupun 20 meter, gaya apungnya tetap sama.
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <!-- Gentle Next Step Card at the Very Bottom -->
+      <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-emerald-400/30 bg-gradient-to-r from-emerald-950/30 via-slate-900/90 to-sky-950/30 text-center space-y-4">
+        <span class="text-3xl">🎉</span>
+        <h3 class="text-xl sm:text-2xl font-extrabold text-white">Hebat! Kamu Sudah Menyelesaikan Seluruh Dasar Pemahaman Fluida!</h3>
+        <p class="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          Sekarang kamu sudah punya bekal logika yang kuat. Kamu bebas memilih langkah berikutnya sesuai kenyamananmu—bisa melihat animasinya bergerak di Laboratorium Simulasi, mengintip Kamus Rumus, atau langsung mencoba Kuis Latihan (yang juga punya pembahasan rinci di setiap soal!).
+        </p>
+        <div class="flex flex-wrap justify-center gap-3 pt-2">
+          <button onclick="jumpToLab('statis', 'hidrostatis')" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-sky-500 text-slate-950 hover:bg-sky-400 transition-all">
+            Coba Lab Fluida Statis
+          </button>
+          <button onclick="jumpToLab('dinamis')" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 text-slate-950 hover:bg-cyan-400 transition-all">
+            Coba Lab Fluida Dinamis
+          </button>
+          <button onclick="switchMainTab('kuis')" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition-all">
+            Latihan 20 Soal + Pembahasan Rinci
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECTION 1: FLUIDA STATIS (INTERACTIVE LAB)                          -->
+    <!-- =================================================================== -->
+    <section id="section-statis" class="hidden space-y-6">
+      <!-- Intro Banner -->
+      <div class="glass-panel rounded-2xl p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500/15 text-sky-300 border border-sky-400/30 mb-2">
+            Laboratorium Interaktif • Fluida Diam
+          </span>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white">Eksplorasi Hukum-Hukum Fluida Statis</h2>
+          <p class="text-sm text-slate-300 mt-1 max-w-2xl">
+            Ubah pengaturan di sebelah kanan secara perlahan dan amati bagaimana animasi serta angka tekanan di layar ikut berubah.
+          </p>
+        </div>
+
+        <!-- Sub-module Switcher -->
+        <div class="flex flex-wrap gap-2 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 self-start lg:self-center">
+          <button onclick="switchStatisSub('hidrostatis')" id="sub-btn-hidrostatis" class="statis-sub-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-sky-500 text-slate-950 transition-all">
+            Tekanan Hidrostatis
+          </button>
+          <button onclick="switchStatisSub('pascal')" id="sub-btn-pascal" class="statis-sub-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition-all">
+            Hukum Pascal
+          </button>
+          <button onclick="switchStatisSub('archimedes')" id="sub-btn-archimedes" class="statis-sub-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition-all">
+            Hukum Archimedes
+          </button>
+        </div>
+      </div>
+
+      <!-- SUB-MODULE 1A: TEKANAN HIDROSTATIS -->
+      <div id="statis-hidrostatis" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Canvas Area -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+          <div class="canvas-container h-[360px] sm:h-[430px] shadow-2xl">
+            <canvas id="canvas-hidrostatis"></canvas>
+            <div class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur px-3 py-1.5 rounded-xl border border-sky-500/30 text-xs text-sky-200">
+              💡 Geser titik oranye (penyelam) naik/turun di dalam tangki
+            </div>
+          </div>
+
+          <!-- Beginner Explanation Box -->
+          <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-sky-400 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-bold text-white text-base">Cara Membaca Animasi Ini (Penjelasan Awam)</h3>
+              <span class="font-mono text-xs sm:text-sm px-3 py-1 rounded-lg bg-sky-500/15 text-sky-300 border border-sky-400/20">
+                Pₕ = ρ · g · h
+              </span>
+            </div>
+            <p class="text-sm text-slate-300 leading-relaxed" id="desc-hidrostatis">
+              <strong>Bayangkan titik oranye itu adalah penyelam:</strong> Semakin dalam penyelam turun ke dasar tangki (angka <strong>h</strong> makin besar), semakin berat tumpukan cairan di atas kepalanya. Perhatikan <strong>3 panah kuning</strong> di sekitar titik oranye yang makin panjang saat digeser ke bawah—artinya cairan menekan tubuh penyelam makin kuat dari segala arah! Perhatikan juga lubang bocor di kanan tangki: lubang paling bawah menyemprot paling jauh karena tekanannya paling kuat.
+            </p>
+            <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              <span>• <strong class="text-sky-300 font-mono">Pₕ</strong> = Tekanan murni dari berat cairan</span>
+              <span>• <strong class="text-sky-300 font-mono">ρ</strong> = Kepadatan jenis cairan</span>
+              <span>• <strong class="text-sky-300 font-mono">g</strong> = Tarikan gravitasi planet</span>
+              <span>• <strong class="text-sky-300 font-mono">h</strong> = Kedalaman diukur dari permukaan atas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls & Live Readout Panel -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+          <div class="glass-panel rounded-2xl p-5 space-y-4">
+            <h3 class="font-bold text-white text-base flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+              Kontrol Variabel Tangki
+            </h3>
+
+            <!-- Fluid Selector -->
+            <div>
+              <label for="hidro-fluid" class="block text-xs font-semibold text-slate-300 mb-1.5">1. Pilih Jenis Cairan (Kepadatan ρ)</label>
+              <select id="hidro-fluid" onchange="updateHidroParams()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-sky-400">
+                <option value="800" data-color="#facc15" data-name="Minyak Goreng">Minyak Goreng (Ringan • ρ = 800 kg/m³)</option>
+                <option value="1000" data-color="#0ea5e9" data-name="Air Tawar" selected>Air Tawar (Standar • ρ = 1.000 kg/m³)</option>
+                <option value="1030" data-color="#0284c7" data-name="Air Laut">Air Laut (Lebih Padat • ρ = 1.030 kg/m³)</option>
+                <option value="1420" data-color="#f59e0b" data-name="Madu Kental">Madu Kental (Sangat Padat • ρ = 1.420 kg/m³)</option>
+                <option value="13600" data-color="#94a3b8" data-name="Air Raksa">Air Raksa / Merkuri (Super Berat • ρ = 13.600 kg/m³)</option>
+              </select>
+            </div>
+
+            <!-- Depth Slider -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-300">2. Kedalaman Penyelam (h)</span>
+                <span class="font-mono text-amber-300" id="val-hidro-h">4,0 m</span>
+              </div>
+              <input type="range" id="hidro-h" min="0" max="10" step="0.1" value="4.0" oninput="updateHidroParams()" class="w-full" />
+            </div>
+
+            <!-- Gravity Selector -->
+            <div>
+              <label for="hidro-g" class="block text-xs font-semibold text-slate-300 mb-1.5">3. Lokasi Planet (Gravitasi g)</label>
+              <select id="hidro-g" onchange="updateHidroParams()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-sky-400">
+                <option value="1.62">Bulan (Gravitasi Lemah • g = 1,62 m/s²)</option>
+                <option value="3.72">Mars (Gravitasi Sedang • g = 3,72 m/s²)</option>
+                <option value="9.8" selected>Bumi (Normal • g = 9,8 m/s²)</option>
+                <option value="24.79">Jupiter (Gravitasi Raksasa • g = 24,79 m/s²)</option>
+              </select>
+            </div>
+
+            <!-- Checkboxes -->
+            <div class="flex flex-col gap-2 pt-1">
+              <label class="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
+                <input type="checkbox" id="hidro-atm" checked onchange="updateHidroParams()" class="rounded accent-sky-500 w-4 h-4" />
+                <span>Sertakan tekanan udara luar di atas permukaan (P₀ = 101,3 kPa)</span>
+              </label>
+              <label class="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
+                <input type="checkbox" id="hidro-holes" checked onchange="updateHidroParams()" class="rounded accent-sky-500 w-4 h-4" />
+                <span>Tampilkan pancaran air dari 3 lubang dinding tangki</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Readout Cards -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="glass-panel rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Tekanan Cairan Saja (Pₕ)</p>
+              <p class="font-mono text-xl font-bold text-sky-300 mt-1" id="out-hidro-ph">39,20 kPa</p>
+              <p class="font-mono text-[11px] text-slate-400 mt-0.5" id="out-hidro-ph-pa">39.200 Pa</p>
+            </div>
+            <div class="glass-panel rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Tekanan Total (Pₕ + P₀)</p>
+              <p class="font-mono text-xl font-bold text-amber-300 mt-1" id="out-hidro-ptot">140,53 kPa</p>
+              <p class="font-mono text-[11px] text-slate-400 mt-0.5" id="out-hidro-atm-ratio">1,39 atm</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-MODULE 1B: HUKUM PASCAL -->
+      <div id="statis-pascal" class="hidden grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-7 flex flex-col gap-4">
+          <div class="canvas-container h-[360px] sm:h-[430px] shadow-2xl">
+            <canvas id="canvas-pascal"></canvas>
+          </div>
+          <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-teal-400 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-bold text-white text-base">Cara Membaca Animasi Dongkrak (Penjelasan Awam)</h3>
+              <span class="font-mono text-xs sm:text-sm px-3 py-1 rounded-lg bg-teal-500/15 text-teal-300 border border-teal-400/20">
+                F₁ / A₁ = F₂ / A₂
+              </span>
+            </div>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              <strong>Bayangkan seperti ini:</strong> Cairan hijau di dalam pipa tertutup tidak bisa kempes saat ditekan. Saat kamu menekan piston kiri yang sempit (<span class="font-mono text-sky-300">A₁</span>) dengan tenaga tangan (<span class="font-mono text-sky-300">F₁</span>), tekanan tersebut diteruskan ke piston kanan yang lebar (<span class="font-mono text-teal-300">A₂</span>). Karena luas kanannya berkali-kali lipat lebih lebar, tenaga dorong ke atas (<span class="font-mono text-teal-300">F₂</span>) ikut berlipat ganda sehingga mampu mengangkat mobil!
+            </p>
+            <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              <span>• <strong class="text-sky-300 font-mono">F₁</strong> = Tenaga tekan tangan/pompa (kiri)</span>
+              <span>• <strong class="text-sky-300 font-mono">A₁</strong> = Lebar penampang pipa kecil (kiri)</span>
+              <span>• <strong class="text-teal-300 font-mono">F₂</strong> = Tenaga angkat ke beban (kanan)</span>
+              <span>• <strong class="text-teal-300 font-mono">A₂</strong> = Lebar penampang pipa besar (kanan)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 flex flex-col gap-4">
+          <div class="glass-panel rounded-2xl p-5 space-y-4">
+            <h3 class="font-bold text-white text-base flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-teal-400"></span>
+              Kontrol Sistem Hidrolik
+            </h3>
+
+            <!-- Beban Target -->
+            <div>
+              <label for="pascal-load" class="block text-xs font-semibold text-slate-300 mb-1.5">1. Pilih Beban yang Mau Diangkat di Kanan</label>
+              <select id="pascal-load" onchange="updatePascalParams()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-teal-400">
+                <option value="5000">Motor Sport (500 kg • Berat W = 5.000 N)</option>
+                <option value="12000" selected>Mobil Sedan (1.200 kg • Berat W = 12.000 N)</option>
+                <option value="25000">Truk Ringan (2.500 kg • Berat W = 25.000 N)</option>
+                <option value="50000">Gajah Afrika (5.000 kg • Berat W = 50.000 N)</option>
+              </select>
+            </div>
+
+            <!-- Gaya Input F1 -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-300">2. Tenaga Tekan Input di Kiri (F₁)</span>
+                <span class="font-mono text-sky-300" id="val-pascal-f1">600 N</span>
+              </div>
+              <input type="range" id="pascal-f1" min="50" max="2500" step="50" value="600" oninput="updatePascalParams()" class="w-full" />
+            </div>
+
+            <!-- Luas A1 -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-300">3. Lebar Piston Kecil Kiri (A₁)</span>
+                <span class="font-mono text-sky-300" id="val-pascal-a1">0,05 m²</span>
+              </div>
+              <input type="range" id="pascal-a1" min="0.01" max="0.20" step="0.01" value="0.05" oninput="updatePascalParams()" class="w-full" />
+            </div>
+
+            <!-- Luas A2 -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-300">4. Lebar Piston Besar Kanan (A₂)</span>
+                <span class="font-mono text-teal-300" id="val-pascal-a2">1,20 m²</span>
+              </div>
+              <input type="range" id="pascal-a2" min="0.20" max="2.50" step="0.05" value="1.20" oninput="updatePascalParams()" class="w-full" />
+            </div>
+          </div>
+
+          <!-- Readout Cards & Status -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="glass-panel rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Gaya Angkat Dihasilkan (F₂)</p>
+              <p class="font-mono text-xl font-bold text-teal-300 mt-1" id="out-pascal-f2">14.400 N</p>
+            </div>
+            <div class="glass-panel rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Lipat Ganda Tenaga (A₂/A₁)</p>
+              <p class="font-mono text-xl font-bold text-sky-300 mt-1" id="out-pascal-ma">24,0×</p>
+            </div>
+          </div>
+
+          <div id="pascal-status-banner" class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-center">
+            ✅ Gaya F₂ cukup kuat — Beban Terangkat!
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-MODULE 1C: HUKUM ARCHIMEDES -->
+      <div id="statis-archimedes" class="hidden grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-7 flex flex-col gap-4">
+          <div class="canvas-container h-[360px] sm:h-[430px] shadow-2xl">
+            <canvas id="canvas-archimedes"></canvas>
+            <div class="absolute top-3 right-3 px-3 py-1.5 rounded-xl text-xs font-bold border" id="arch-state-badge">
+              TERAPUNG
+            </div>
+          </div>
+          <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-amber-400 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-bold text-white text-base">Cara Membaca Animasi Celup Benda (Penjelasan Awam)</h3>
+              <span class="font-mono text-xs sm:text-sm px-3 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-400/20">
+                Fₐ = ρf · g · Vcelup
+              </span>
+            </div>
+            <p class="text-sm text-slate-300 leading-relaxed" id="desc-archimedes">
+              <strong>Bayangkan sedang terjadi "tarik tambang" antara dua panah:</strong> Panah merah ke bawah adalah <strong>berat benda (W)</strong> yang menarik benda tenggelam, sedangkan panah hijau ke atas adalah <strong>dorongan apung air (Fₐ)</strong> yang mengangkat benda naik. Coba ganti material dari Kayu ke Besi dan lihat bagaimana benda jatuh ke dasar saat panah merah mengalahkan panah hijau!
+            </p>
+            <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              <span>• <strong class="text-rose-300 font-mono">W</strong> = Berat asli benda (panah merah ke bawah)</span>
+              <span>• <strong class="text-emerald-300 font-mono">Fₐ</strong> = Dorongan air ke atas (panah hijau ke atas)</span>
+              <span>• <strong class="text-amber-300 font-mono">ρb</strong> = Tingkat kepadatan benda</span>
+              <span>• <strong class="text-sky-300 font-mono">ρf</strong> = Tingkat kepadatan cairan di gelas</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 flex flex-col gap-4">
+          <div class="glass-panel rounded-2xl p-5 space-y-4">
+            <h3 class="font-bold text-white text-base flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+              Eksperimen Celup Benda
+            </h3>
+
+            <!-- Material Preset -->
+            <div>
+              <label for="arch-material" class="block text-xs font-semibold text-slate-300 mb-1.5">1. Pilih Bahan Benda</label>
+              <select id="arch-material" onchange="selectArchMaterial()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+                <option value="500" selected>Kayu Pinus (Ringan • ρ = 500 kg/m³)</option>
+                <option value="920">Es Batu (Agak Ringan • ρ = 920 kg/m³)</option>
+                <option value="1000">Plastik Khusus (Sama dengan Air • ρ = 1.000 kg/m³)</option>
+                <option value="2700">Aluminium (Padat • ρ = 2.700 kg/m³)</option>
+                <option value="7850">Besi Baja (Sangat Padat • ρ = 7.850 kg/m³)</option>
+              </select>
+            </div>
+
+            <!-- Custom Object Density -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-300">2. Kepadatan Benda (ρb)</span>
+                <span class="font-mono text-amber-300" id="val-arch-rhob">500 kg/m³</span>
+              </div>
+              <input type="range" id="arch-rhob" min="200" max="8000" step="20" value="500" oninput="updateArchParams()" class="w-full" />
+            </div>
+
+            <!-- Object Volume -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-300">3. Ukuran / Volume Benda (Vb)</span>
+                <span class="font-mono text-sky-300" id="val-arch-vol">0,050 m³ (50 L)</span>
+              </div>
+              <input type="range" id="arch-vol" min="0.01" max="0.10" step="0.005" value="0.05" oninput="updateArchParams()" class="w-full" />
+            </div>
+
+            <!-- Fluid Density -->
+            <div>
+              <label for="arch-fluid" class="block text-xs font-semibold text-slate-300 mb-1.5">4. Jenis Cairan di Bejana (ρf)</label>
+              <select id="arch-fluid" onchange="updateArchParams()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+                <option value="800">Minyak (ρf = 800 kg/m³)</option>
+                <option value="1000" selected>Air Tawar (ρf = 1.000 kg/m³)</option>
+                <option value="1260">Gliserin Kental (ρf = 1.260 kg/m³)</option>
+                <option value="13600">Air Raksa Super Padat (ρf = 13.600 kg/m³)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Readout Cards -->
+          <div class="grid grid-cols-3 gap-2.5">
+            <div class="glass-panel rounded-2xl p-3.5">
+              <p class="text-[11px] text-slate-400">Berat Benda (W)</p>
+              <p class="font-mono text-base sm:text-lg font-bold text-rose-300 mt-1" id="out-arch-w">245,0 N</p>
+            </div>
+            <div class="glass-panel rounded-2xl p-3.5">
+              <p class="text-[11px] text-slate-400">Gaya Apung (Fₐ)</p>
+              <p class="font-mono text-base sm:text-lg font-bold text-emerald-300 mt-1" id="out-arch-fa">245,0 N</p>
+            </div>
+            <div class="glass-panel rounded-2xl p-3.5">
+              <p class="text-[11px] text-slate-400">Tercelup</p>
+              <p class="font-mono text-base sm:text-lg font-bold text-sky-300 mt-1" id="out-arch-sub">50%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECTION 2: FLUIDA DINAMIS (VENTURI & BERNOULLI LAB)                 -->
+    <!-- =================================================================== -->
+    <section id="section-dinamis" class="hidden space-y-6">
+      <div class="glass-panel rounded-2xl p-5 sm:p-6">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 mb-2">
+          Laboratorium Interaktif • Fluida Bergerak
+        </span>
+        <h2 class="text-xl sm:text-2xl font-extrabold text-white">Simulasi Pipa Venturi: Asas Kontinuitas & Bernoulli</h2>
+        <p class="text-sm text-slate-300 mt-1 max-w-3xl">
+          Perhatikan titik-titik cairan yang mengalir melewati pipa lebar lalu masuk ke leher pipa yang menyempit, serta perhatikan tinggi air di kedua tabung ukur kaca di bagian atas!
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Venturi Canvas -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+          <div class="canvas-container h-[370px] sm:h-[440px] shadow-2xl">
+            <canvas id="canvas-dinamis"></canvas>
+          </div>
+
+          <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-cyan-400 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-bold text-white text-base">Cara Membaca Animasi Pipa Aliran (Penjelasan Awam)</h3>
+              <span class="font-mono text-xs px-3 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-400/20">
+                P₁ + ½ρv₁² = P₂ + ½ρv₂²
+              </span>
+            </div>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              <strong>1) Lihat titik-titik partikel di dalam pipa:</strong> Saat melewati leher pipa yang sempit di tengah, titik biru berubah menjadi kuning dan berlari jauh lebih kencang agar aliran tidak macet (<em>Asas Kontinuitas</em>).<br/>
+              <strong>2) Lihat dua tabung kaca vertikal di atas pipa:</strong> Saat air berlari kencang di bagian sempit, dorongannya ke dinding pipa justru melemah sehingga permukaan air di tabung kaca tengah (<span class="font-mono text-rose-300">P₂</span>) turun lebih rendah daripada tabung kiri (<span class="font-mono text-sky-300">P₁</span>)!
+            </p>
+            <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              <span>• <strong class="text-sky-300 font-mono">A₁, v₁, P₁</strong> = Lebar, kecepatan & tekanan pipa besar</span>
+              <span>• <strong class="text-amber-300 font-mono">A₂, v₂, P₂</strong> = Lebar, kecepatan & tekanan pipa sempit</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls & Telemetry -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+          <div class="glass-panel rounded-2xl p-5 space-y-4">
+            <h3 class="font-bold text-white text-base flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+              Pengaturan Pipa & Aliran
+            </h3>
+
+            <!-- Area A1 -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-300">1. Luas Penampang Pipa Lebar (A₁)</span>
+                <span class="font-mono text-sky-300" id="val-din-a1">80 cm²</span>
+              </div>
+              <input type="range" id="din-a1" min="40" max="100" step="5" value="80" oninput="updateDinamisParams()" class="w-full" />
+            </div>
+
+            <!-- Area A2 -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-300">2. Luas Leher Pipa Sempit (A₂)</span>
+                <span class="font-mono text-amber-300" id="val-din-a2">30 cm²</span>
+              </div>
+              <input type="range" id="din-a2" min="20" max="60" step="5" value="30" oninput="updateDinamisParams()" class="w-full" />
+            </div>
+
+            <!-- Velocity v1 -->
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-300">3. Kecepatan Aliran Masuk (v₁)</span>
+                <span class="font-mono text-cyan-300" id="val-din-v1">1,5 m/s</span>
+              </div>
+              <input type="range" id="din-v1" min="0.5" max="3.0" step="0.1" value="1.5" oninput="updateDinamisParams()" class="w-full" />
+            </div>
+
+            <!-- Fluid Density -->
+            <div>
+              <label for="din-fluid" class="block text-xs font-semibold text-slate-300 mb-1.5">4. Jenis Fluida Mengalir</label>
+              <select id="din-fluid" onchange="updateDinamisParams()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400">
+                <option value="800">Minyak (ρ = 800 kg/m³)</option>
+                <option value="1000" selected>Air (ρ = 1.000 kg/m³)</option>
+                <option value="1060">Darah / Fluida Kental Ideal (ρ = 1.060 kg/m³)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Telemetry Grid -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="glass-panel rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Debit Aliran (Q)</p>
+              <p class="font-mono text-xl font-bold text-cyan-300 mt-1" id="out-din-q">12,00 L/s</p>
+              <p class="font-mono text-[11px] text-slate-400 mt-0.5" id="out-din-qm3">0,0120 m³/s</p>
+            </div>
+            <div class="glass-panel rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Kecepatan di Pipa Sempit (v₂)</p>
+              <p class="font-mono text-xl font-bold text-amber-300 mt-1" id="out-din-v2">4,00 m/s</p>
+              <p class="font-mono text-[11px] text-slate-400 mt-0.5" id="out-din-ratio">2,67× dari v₁</p>
+            </div>
+            <div class="glass-panel rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Tekanan Pipa Lebar (P₁)</p>
+              <p class="font-mono text-xl font-bold text-sky-300 mt-1" id="out-din-p1">150,0 kPa</p>
+              <p class="font-mono text-[11px] text-slate-400 mt-0.5">Tekanan awal acuan</p>
+            </div>
+            <div class="glass-panel rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Tekanan Pipa Sempit (P₂)</p>
+              <p class="font-mono text-xl font-bold text-rose-300 mt-1" id="out-din-p2">143,1 kPa</p>
+              <p class="font-mono text-[11px] text-rose-300/80 mt-0.5" id="out-din-dp">ΔP = -6,88 kPa</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECTION 3: KAMUS RUMUS & RANGKUMAN MATERI                           -->
+    <!-- =================================================================== -->
+    <section id="section-materi" class="hidden space-y-6">
+      <div class="glass-panel rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-400/30 mb-2">
+            Panduan Ringkas & Arti Simbol
+          </span>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white">Kamus Rumus Utama Fluida</h2>
+          <p class="text-sm text-slate-300 mt-1">Setiap rumus dilengkapi penjelasan arti hurufnya dalam bahasa yang mudah dipahami.</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="filterMateri('all', this)" class="mat-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-500 text-slate-950">Semua</button>
+          <button onclick="filterMateri('statis', this)" class="mat-filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white">Statis</button>
+          <button onclick="filterMateri('dinamis', this)" class="mat-filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white">Dinamis</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="materi-grid">
+        <!-- Card 1 -->
+        <article data-cat="statis" class="materi-card glass-panel rounded-2xl p-5 flex flex-col justify-between hover:border-sky-400/40 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-500/15 text-sky-300">Fluida Statis</span>
+              <span class="text-xs text-slate-400 font-mono">#01</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Tekanan Hidrostatis & Tekanan Mutlak</h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">
+              Tekanan yang muncul akibat berat cairan yang diam pada kedalaman <span class="font-mono text-sky-300">h</span> dari permukaan atas. Jika wadah terbuka ke udara luar, total tekanannya ditambah tekanan udara atmosfer (<span class="font-mono text-sky-300">P₀</span>).
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 font-mono text-xs text-sky-300">
+              Pₕ = ρ · g · h<br/>
+              Pₜₒₜₐₗ = P₀ + ρ · g · h
+            </div>
+            <p class="text-xs text-slate-400"><strong>Arti huruf:</strong> ρ = kepadatan cairan, g = gravitasi, h = kedalaman dari permukaan, P₀ = tekanan udara luar (101.300 Pa).</p>
+          </div>
+        </article>
+
+        <!-- Card 2 -->
+        <article data-cat="statis" class="materi-card glass-panel rounded-2xl p-5 flex flex-col justify-between hover:border-teal-400/40 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-teal-500/15 text-teal-300">Fluida Statis</span>
+              <span class="text-xs text-slate-400 font-mono">#02</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Hukum Pascal</h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">
+              Tekanan yang diberikan pada cairan dalam ruang tertutup diteruskan sama besar ke segala arah, sehingga penampang besar menghasilkan gaya angkat berlipat ganda.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 font-mono text-xs text-teal-300">
+              F₁ / A₁ = F₂ / A₂<br/>
+              F₂ = (d₂ / d₁)² · F₁
+            </div>
+            <p class="text-xs text-slate-400"><strong>Arti huruf:</strong> F₁ & F₂ = gaya tekan & gaya angkat (N), A₁ & A₂ = luas piston kecil & besar, d₁ & d₂ = diameter piston.</p>
+          </div>
+        </article>
+
+        <!-- Card 3 -->
+        <article data-cat="statis" class="materi-card glass-panel rounded-2xl p-5 flex flex-col justify-between hover:border-amber-400/40 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/15 text-amber-300">Fluida Statis</span>
+              <span class="text-xs text-slate-400 font-mono">#03</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Hukum Archimedes</h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">
+              Benda yang dicelupkan ke fluida mendapat dorongan ke atas (<span class="font-mono text-amber-300">Fₐ</span>) sebesar berat fluida yang tumpah/tergusur oleh bagian benda yang tercelup.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 font-mono text-xs text-amber-300">
+              Fₐ = ρf · g · Vcelup = Wudara − Wfluida<br/>
+              Terapung: ρb &lt; ρf | Tenggelam: ρb &gt; ρf
+            </div>
+            <p class="text-xs text-slate-400"><strong>Arti huruf:</strong> Fₐ = gaya apung ke atas, ρf = kepadatan fluida, Vcelup = volume bagian benda yang masuk ke air.</p>
+          </div>
+        </article>
+
+        <!-- Card 4 -->
+        <article data-cat="statis" class="materi-card glass-panel rounded-2xl p-5 flex flex-col justify-between hover:border-indigo-400/40 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-500/15 text-indigo-300">Fluida Statis</span>
+              <span class="text-xs text-slate-400 font-mono">#04</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Tegangan Permukaan & Kapilaritas</h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">
+              Permukaan air berperilaku seperti kulit elastis tipis (membuat nyamuk bisa berdiri di atas air), dan air bisa merambat naik sendiri lewat celah pipa sangat sempit (kapilaritas).
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 font-mono text-xs text-indigo-300">
+              γ = F / (2L)<br/>
+              h = (2 · γ · cos θ) / (ρ · g · r)
+            </div>
+            <p class="text-xs text-slate-400"><strong>Contoh:</strong> Air tanah meresap naik dari akar ke daun tumbuhan tinggi, dan air meresap naik pada sumbu kompor atau tisu.</p>
+          </div>
+        </article>
+
+        <!-- Card 5 -->
+        <article data-cat="dinamis" class="materi-card glass-panel rounded-2xl p-5 flex flex-col justify-between hover:border-cyan-400/40 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-cyan-500/15 text-cyan-300">Fluida Dinamis</span>
+              <span class="text-xs text-slate-400 font-mono">#05</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Debit & Persamaan Kontinuitas</h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">
+              Volume cairan yang mengalir tiap detik (debit <span class="font-mono text-cyan-300">Q</span>) selalu sama di sepanjang pipa. Jika pipa menyempit, aliran cairan otomatis makin cepat.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 font-mono text-xs text-cyan-300">
+              Q = V / t = A · v<br/>
+              A₁ · v₁ = A₂ · v₂
+            </div>
+            <p class="text-xs text-slate-400"><strong>Arti huruf:</strong> Q = debit aliran (m³/s), V = volume cairan, t = waktu (detik), A = luas lubang pipa, v = kecepatan aliran.</p>
+          </div>
+        </article>
+
+        <!-- Card 6 -->
+        <article data-cat="dinamis" class="materi-card glass-panel rounded-2xl p-5 flex flex-col justify-between hover:border-emerald-400/40 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-300">Fluida Dinamis</span>
+              <span class="text-xs text-slate-400 font-mono">#06</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Asas Bernoulli & Teorema Torricelli</h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">
+              Di bagian pipa yang alirannya lebih cepat, tekanan fluidanya lebih rendah. Sedangkan kecepatan pancaran air dari tangki bocor sama dengan kecepatan benda jatuh bebas dari permukaan air.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 font-mono text-xs text-emerald-300">
+              P₁ + ½ρv₁² + ρgh₁ = P₂ + ½ρv₂² + ρgh₂<br/>
+              Torricelli: v = √(2 · g · h)
+            </div>
+            <p class="text-xs text-slate-400"><strong>Contoh:</strong> Gaya angkat sayap pesawat terbang, alat penyemprot parfum, dan pancaran air dari keran tangki.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECTION 4: KUIS INTERAKTIF (20 SOAL + PEMBAHASAN RINCI)             -->
+    <!-- =================================================================== -->
+    <section id="section-kuis" class="hidden max-w-4xl mx-auto space-y-6">
+      <!-- Quiz Header / Filter & Scoreboard -->
+      <div class="glass-panel rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <h2 class="text-xl font-extrabold text-white">Kuis Latihan Fluida (20 Soal + Pembahasan Rinci)</h2>
+          <p class="text-xs sm:text-sm text-slate-400">
+            Jangan takut salah! Setiap jawaban langsung memunculkan <strong>penjelasan awam, langkah penyelesaian, dan tips anti-jebakan</strong>.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Category Filter -->
+          <select id="quiz-category-filter" onchange="restartQuiz()" aria-label="Filter Kategori Soal" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-sky-200 focus:outline-none focus:border-sky-400">
+            <option value="all" selected>Semua Soal (20 Soal)</option>
+            <option value="awam">Khusus Konsep & Logika Awam (8 Soal)</option>
+            <option value="statis">Fluida Statis & Hitungan (7 Soal)</option>
+            <option value="dinamis">Fluida Dinamis & Hitungan (5 Soal)</option>
+          </select>
+
+          <div class="bg-slate-900/90 px-3.5 py-1.5 rounded-xl border border-slate-800 text-center">
+            <span class="block text-[10px] uppercase tracking-wider text-slate-400">Streak</span>
+            <span class="font-mono text-sm font-bold text-amber-400" id="quiz-streak">0 🔥</span>
+          </div>
+          <div class="bg-slate-900/90 px-4 py-1.5 rounded-xl border border-slate-800 text-center">
+            <span class="block text-[10px] uppercase tracking-wider text-slate-400">Skor</span>
+            <span class="font-mono text-sm font-bold text-sky-400" id="quiz-score">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Question Card -->
+      <div id="quiz-active-box" class="glass-panel rounded-2xl p-6 sm:p-8 space-y-6">
+        <!-- Progress bar -->
+        <div class="space-y-2">
+          <div class="flex flex-wrap justify-between items-center gap-2 text-xs font-semibold">
+            <span class="text-sky-300" id="quiz-progress-text">Soal 1 dari 20</span>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30" id="quiz-difficulty-badge">Konsep Awam</span>
+              <span class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300" id="quiz-topic-badge">Pengertian Fluida</span>
+            </div>
+          </div>
+          <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+            <div id="quiz-progress-bar" class="h-full bg-gradient-to-r from-sky-400 to-teal-400 transition-all duration-300" style="width: 5%"></div>
+          </div>
+        </div>
+
+        <!-- Question Text -->
+        <div>
+          <h3 id="quiz-question-text" class="text-base sm:text-xl font-bold text-white leading-relaxed">
+            Memuat pertanyaan...
+          </h3>
+        </div>
+
+        <!-- Options List -->
+        <div id="quiz-options-container" class="space-y-3">
+          <!-- Options injected by JS -->
+        </div>
+
+        <!-- Detailed Structured Explanation Box (Hidden until answered) -->
+        <div id="quiz-explanation-box" class="hidden rounded-2xl p-5 sm:p-6 border transition-all space-y-4">
+          <div class="flex items-center gap-2 font-extrabold text-base" id="quiz-feedback-title"></div>
+
+          <!-- Part 1: Inti Konsep Awam -->
+          <div class="bg-slate-950/75 rounded-xl p-4 border border-slate-800/90 space-y-1">
+            <p class="text-xs font-bold uppercase tracking-wider text-sky-300">💡 1. Penjelasan Mudah (Logika Awam)</p>
+            <p class="text-xs sm:text-sm text-slate-200 leading-relaxed" id="quiz-exp-concept"></p>
+          </div>
+
+          <!-- Part 2: Langkah Penyelesaian / Perhitungan -->
+          <div class="bg-slate-950/75 rounded-xl p-4 border border-slate-800/90 space-y-1">
+            <p class="text-xs font-bold uppercase tracking-wider text-teal-300">📝 2. Langkah Analisis & Penyelesaian Rinci</p>
+            <div class="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-line" id="quiz-exp-steps"></div>
+          </div>
+
+          <!-- Part 3: Kenapa Pilihan Lain Salah -->
+          <div class="bg-slate-950/75 rounded-xl p-4 border border-slate-800/90 space-y-1">
+            <p class="text-xs font-bold uppercase tracking-wider text-amber-300">⚠️ 3. Kenapa Pilihan Lain Kurang Tepat (Tips Anti-Jebakan)</p>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed" id="quiz-exp-trap"></p>
+          </div>
+        </div>
+
+        <!-- Navigation Button -->
+        <div class="flex justify-end pt-2">
+          <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="hidden px-6 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-sky-400 to-teal-400 text-slate-950 shadow-lg shadow-sky-500/25 hover:brightness-110 transition-all">
+            Soal Berikutnya →
+          </button>
+        </div>
+      </div>
+
+      <!-- Quiz Result Summary Card (Hidden until finished) -->
+      <div id="quiz-result-box" class="hidden glass-panel rounded-2xl p-8 text-center space-y-6">
+        <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-4xl shadow-xl shadow-amber-500/20">
+          🏆
+        </div>
+        <div>
+          <span class="px-3 py-1 rounded-full text-xs font-bold bg-sky-500/15 text-sky-300 border border-sky-400/30" id="quiz-rank-badge">
+            Master Hidrodinamika
+          </span>
+          <h3 class="text-2xl sm:text-3xl font-extrabold text-white mt-3">Latihan Kuis Selesai!</h3>
+          <p class="text-slate-300 text-sm mt-1 max-w-md mx-auto" id="quiz-result-msg">
+            Luar biasa! Pemahamanmu tentang konsep dan perhitungan fluida sudah sangat kuat.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 max-w-lg mx-auto">
+          <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
+            <p class="text-xs text-slate-400">Total Skor</p>
+            <p class="font-mono text-2xl font-extrabold text-sky-400 mt-1" id="res-total-score">100</p>
+          </div>
+          <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
+            <p class="text-xs text-slate-400">Jawaban Benar</p>
+            <p class="font-mono text-2xl font-extrabold text-emerald-400 mt-1" id="res-correct-count">20/20</p>
+          </div>
+          <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
+            <p class="text-xs text-slate-400">Streak Terbaik</p>
+            <p class="font-mono text-2xl font-extrabold text-amber-400 mt-1" id="res-best-streak">20</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-3 pt-2">
+          <button onclick="restartQuiz()" class="px-6 py-3 rounded-xl font-bold text-sm bg-sky-500 text-slate-950 hover:bg-sky-400 transition-all shadow-lg shadow-sky-500/25">
+            Ulangi Kuis (Acak Soal)
+          </button>
+          <button onclick="switchMainTab('pemula')" class="px-6 py-3 rounded-xl font-semibold text-sm bg-slate-800 text-white hover:bg-slate-700 border border-slate-700 transition-all">
+            Baca Ulang Panduan dari Nol
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 py-5 px-4 text-center text-xs text-slate-500">
+    FluidaLab • Media Pembelajaran Fisika Interaktif (Panduan Awam, Simulasi Lab, & 20 Soal Pembahasan Rinci)
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- JAVASCRIPT: AUDIO ENGINE, PHYSICS SIMULATIONS, & 20-QUESTION QUIZ     -->
+  <!-- ===================================================================== -->
+  <script>
+    // =========================================================================
+    // 1. SYNTHESIZED WEB AUDIO SOUND EFFECTS (No External URLs)
+    // =========================================================================
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.12, vol = 0.08) {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        // Ignore audio errors on restricted browsers
+      }
+    }
+
+    function playQuizSound(isCorrect) {
+      if (isCorrect) {
+        playTone(523.25, 'triangle', 0.14, 0.1);
+        setTimeout(() => playTone(659.25, 'triangle', 0.2, 0.1), 100);
+      } else {
+        playTone(220, 'sawtooth', 0.18, 0.07);
+        setTimeout(() => playTone(185, 'sawtooth', 0.24, 0.07), 110);
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('icon-sound-on').classList.toggle('hidden', !soundEnabled);
+      document.getElementById('icon-sound-off').classList.toggle('hidden', soundEnabled);
+      showToast(soundEnabled ? 'Efek suara diaktifkan' : 'Efek suara dimatikan');
+    }
+
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'bg-slate-900/95 text-sky-200 border border-sky-500/30 px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xl backdrop-blur transition-all duration-300';
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 2200);
+    }
+
+    function fmt(num, dec = 2) {
+      return num.toLocaleString('id-ID', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    }
+
+    // =========================================================================
+    // 2. NAVIGATION & TAB MANAGEMENT
+    // =========================================================================
+    let activeMainTab = 'pemula';
+    let activeStatisSub = 'hidrostatis';
+
+    function switchMainTab(tab) {
+      activeMainTab = tab;
+      playTone(440, 'sine', 0.08, 0.05);
+
+      ['pemula', 'statis', 'dinamis', 'materi', 'kuis'].forEach(t => {
+        document.getElementById(`section-${t}`).classList.toggle('hidden', t !== tab);
+
+        const dBtn = document.getElementById(`nav-${t}`);
+        if (t === tab) {
+          dBtn.className = 'main-tab-btn px-3.5 py-2 rounded-xl text-sm font-semibold transition-all bg-sky-500 text-slate-950 shadow-md shadow-sky-500/25 flex items-center gap-1.5';
+        } else {
+          dBtn.className = 'main-tab-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/70 transition-all flex items-center gap-1.5';
+        }
+
+        const mBtn = document.getElementById(`m-nav-${t}`);
+        if (t === tab) {
+          mBtn.className = 'm-tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-500 text-slate-950';
+        } else {
+          mBtn.className = 'm-tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300';
+        }
+      });
+
+      resizeAllCanvases();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function jumpToLab(mainTab, subTab = null) {
+      switchMainTab(mainTab);
+      if (mainTab === 'statis' && subTab) {
+        switchStatisSub(subTab);
+      }
+    }
+
+    function switchStatisSub(sub) {
+      activeStatisSub = sub;
+      playTone(520, 'sine', 0.08, 0.05);
+
+      ['hidrostatis', 'pascal', 'archimedes'].forEach(s => {
+        const el = document.getElementById(`statis-${s}`);
+        if (s === sub) {
+          el.classList.remove('hidden');
+          el.classList.add('grid');
+        } else {
+          el.classList.add('hidden');
+          el.classList.remove('grid');
+        }
+
+        const btn = document.getElementById(`sub-btn-${s}`);
+        if (s === sub) {
+          btn.className = 'statis-sub-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-sky-500 text-slate-950 transition-all';
+        } else {
+          btn.className = 'statis-sub-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition-all';
+        }
+      });
+
+      resizeAllCanvases();
+    }
+
+    function filterMateri(cat, clickedBtn) {
+      playTone(480, 'sine', 0.07, 0.05);
+      document.querySelectorAll('.mat-filter-btn').forEach(btn => {
+        btn.className = 'mat-filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white';
+      });
+      if (clickedBtn) {
+        clickedBtn.className = 'mat-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-500 text-slate-950';
+      }
+
+      document.querySelectorAll('.materi-card').forEach(card => {
+        if (cat === 'all' || card.dataset.cat === cat) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    // =========================================================================
+    // 3. SIMULATION A: TEKANAN HIDROSTATIS
+    // =========================================================================
+    const hidroState = {
+      rho: 1000,
+      color: '#0ea5e9',
+      name: 'Air Tawar',
+      h: 4.0,
+      g: 9.8,
+      includeAtm: true,
+      showHoles: true,
+      wavePhase: 0,
+      dragging: false
+    };
+
+    function updateHidroParams() {
+      const sel = document.getElementById('hidro-fluid');
+      const opt = sel.options[sel.selectedIndex];
+      hidroState.rho = parseFloat(sel.value);
+      hidroState.color = opt.dataset.color;
+      hidroState.name = opt.dataset.name;
+      hidroState.h = parseFloat(document.getElementById('hidro-h').value);
+      hidroState.g = parseFloat(document.getElementById('hidro-g').value);
+      hidroState.includeAtm = document.getElementById('hidro-atm').checked;
+      hidroState.showHoles = document.getElementById('hidro-holes').checked;
+
+      document.getElementById('val-hidro-h').textContent = `${fmt(hidroState.h, 1)} m`;
+
+      const phPa = hidroState.rho * hidroState.g * hidroState.h;
+      const p0Pa = hidroState.includeAtm ? 101325 : 0;
+      const ptotPa = phPa + p0Pa;
+
+      document.getElementById('out-hidro-ph').textContent = `${fmt(phPa / 1000, 2)} kPa`;
+      document.getElementById('out-hidro-ph-pa').textContent = `${Math.round(phPa).toLocaleString('id-ID')} Pa`;
+      document.getElementById('out-hidro-ptot').textContent = `${fmt(ptotPa / 1000, 2)} kPa`;
+      document.getElementById('out-hidro-atm-ratio').textContent = `${fmt(ptotPa / 101325, 2)} atm`;
+    }
+
+    function drawHidrostatis() {
+      const canvas = document.getElementById('canvas-hidrostatis');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      hidroState.wavePhase += 0.04;
+
+      const tankX = Math.max(55, w * 0.14);
+      const tankW = Math.min(260, w * 0.44);
+      const tankTop = 55;
+      const tankBottom = h - 42;
+      const waterSurfaceY = tankTop + 26;
+      const waterH = tankBottom - waterSurfaceY;
+
+      if (hidroState.includeAtm) {
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.85)';
+        ctx.font = '600 11px "Plus Jakarta Sans", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('P₀ = 101,3 kPa (Tekanan Udara Luar)', tankX + tankW / 2, 22);
+        for (let i = 1; i <= 3; i++) {
+          const ax = tankX + (tankW * i) / 4;
+          drawArrow(ctx, ax, 28, ax, waterSurfaceY - 8, 'rgba(148, 163, 184, 0.6)', 1.5);
+        }
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(tankX, waterSurfaceY);
+      for (let x = 0; x <= tankW; x += 6) {
+        const wy = waterSurfaceY + Math.sin(x * 0.05 + hidroState.wavePhase) * 2.5;
+        ctx.lineTo(tankX + x, wy);
+      }
+      ctx.lineTo(tankX + tankW, tankBottom);
+      ctx.lineTo(tankX, tankBottom);
+      ctx.closePath();
+
+      const grad = ctx.createLinearGradient(0, waterSurfaceY, 0, tankBottom);
+      grad.addColorStop(0, hexToRgba(hidroState.color, 0.45));
+      grad.addColorStop(1, hexToRgba(hidroState.color, 0.85));
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.restore();
+
+      if (hidroState.showHoles) {
+        const depths = [2.5, 5.5, 8.5];
+        depths.forEach(d => {
+          const holeY = waterSurfaceY + (d / 10) * waterH;
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.arc(tankX + tankW, holeY, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          const fallDist = tankBottom - holeY;
+          const maxRange = 2 * Math.sqrt(d * (10 - d)) * ((w - (tankX + tankW) - 25) / 10.5);
+
+          ctx.strokeStyle = hexToRgba(hidroState.color, 0.8);
+          ctx.lineWidth = 3;
+          ctx.setLineDash([6, 4]);
+          ctx.lineDashOffset = -hidroState.wavePhase * 12;
+          ctx.beginPath();
+          ctx.moveTo(tankX + tankW, holeY);
+          const steps = 25;
+          for (let s = 1; s <= steps; s++) {
+            const frac = s / steps;
+            const jx = tankX + tankW + maxRange * frac;
+            const jy = holeY + fallDist * (frac * frac);
+            ctx.lineTo(jx, jy);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+        });
+      }
+
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(tankX, tankTop);
+      ctx.lineTo(tankX, tankBottom);
+      ctx.lineTo(tankX + tankW, tankBottom);
+      ctx.lineTo(tankX + tankW, tankTop);
+      ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px "JetBrains Mono", monospace';
+      ctx.textAlign = 'right';
+      for (let m = 0; m <= 10; m += 2) {
+        const ry = waterSurfaceY + (m / 10) * waterH;
+        ctx.fillText(`${m}m`, tankX - 10, ry + 4);
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(tankX - 6, ry);
+        ctx.lineTo(tankX, ry);
+        ctx.stroke();
+      }
+
+      const probeY = waterSurfaceY + (hidroState.h / 10) * waterH;
+      const probeX = tankX + tankW * 0.45;
+
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(probeX, waterSurfaceY);
+      ctx.lineTo(probeX, probeY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (hidroState.h > 0.6) {
+        ctx.fillStyle = '#fde68a';
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(`h = ${fmt(hidroState.h, 1)} m`, probeX + 8, (waterSurfaceY + probeY) / 2 + 4);
+      }
+
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(probeX, probeY, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      const vecLen = 8 + (hidroState.h / 10) * 22;
+      drawArrow(ctx, probeX - 13 - vecLen, probeY, probeX - 12, probeY, '#fef08a', 2);
+      drawArrow(ctx, probeX + 13 + vecLen, probeY, probeX + 12, probeY, '#fef08a', 2);
+      drawArrow(ctx, probeX, probeY + 13 + vecLen, probeX, probeY + 12, '#fef08a', 2);
+    }
+
+    function bindHidroCanvasEvents() {
+      const canvas = document.getElementById('canvas-hidrostatis');
+      const setDepthFromEvent = (clientY) => {
+        const rect = canvas.getBoundingClientRect();
+        const y = clientY - rect.top;
+        const tankTop = 55;
+        const tankBottom = rect.height - 42;
+        const waterSurfaceY = tankTop + 26;
+        const waterH = tankBottom - waterSurfaceY;
+        let newH = ((y - waterSurfaceY) / waterH) * 10;
+        newH = Math.max(0, Math.min(10, Math.round(newH * 10) / 10));
+        document.getElementById('hidro-h').value = newH;
+        updateHidroParams();
+      };
+
+      canvas.addEventListener('mousedown', (e) => {
+        hidroState.dragging = true;
+        setDepthFromEvent(e.clientY);
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (hidroState.dragging && activeMainTab === 'statis' && activeStatisSub === 'hidrostatis') {
+          setDepthFromEvent(e.clientY);
+        }
+      });
+      window.addEventListener('mouseup', () => { hidroState.dragging = false; });
+
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 0) {
+          hidroState.dragging = true;
+          setDepthFromEvent(e.touches[0].clientY);
+        }
+      }, { passive: true });
+      canvas.addEventListener('touchmove', (e) => {
+        if (hidroState.dragging && e.touches.length > 0) {
+          setDepthFromEvent(e.touches[0].clientY);
+        }
+      }, { passive: true });
+      canvas.addEventListener('touchend', () => { hidroState.dragging = false; });
+    }
+
+    // =========================================================================
+    // 4. SIMULATION B: HUKUM PASCAL (HYDRAULIC LIFT)
+    // =========================================================================
+    const pascalState = {
+      loadW: 12000,
+      f1: 600,
+      a1: 0.05,
+      a2: 1.20,
+      f2: 14400,
+      liftOffset: 0,
+      targetLift: 0
+    };
+
+    function updatePascalParams() {
+      pascalState.loadW = parseFloat(document.getElementById('pascal-load').value);
+      pascalState.f1 = parseFloat(document.getElementById('pascal-f1').value);
+      pascalState.a1 = parseFloat(document.getElementById('pascal-a1').value);
+      pascalState.a2 = parseFloat(document.getElementById('pascal-a2').value);
+
+      document.getElementById('val-pascal-f1').textContent = `${pascalState.f1.toLocaleString('id-ID')} N`;
+      document.getElementById('val-pascal-a1').textContent = `${fmt(pascalState.a1, 2)} m²`;
+      document.getElementById('val-pascal-a2').textContent = `${fmt(pascalState.a2, 2)} m²`;
+
+      const ma = pascalState.a2 / pascalState.a1;
+      pascalState.f2 = pascalState.f1 * ma;
+
+      document.getElementById('out-pascal-f2').textContent = `${Math.round(pascalState.f2).toLocaleString('id-ID')} N`;
+      document.getElementById('out-pascal-ma').textContent = `${fmt(ma, 1)}×`;
+
+      const banner = document.getElementById('pascal-status-banner');
+      if (pascalState.f2 >= pascalState.loadW) {
+        const ratio = Math.min(1, (pascalState.f2 - pascalState.loadW) / pascalState.loadW + 0.35);
+        pascalState.targetLift = 45 * ratio;
+        banner.className = 'px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-center';
+        banner.textContent = `✅ Gaya Angkat F₂ (${Math.round(pascalState.f2).toLocaleString('id-ID')} N) ≥ Berat Beban (${pascalState.loadW.toLocaleString('id-ID')} N) — Beban Terangkat!`;
+      } else {
+        pascalState.targetLift = -10;
+        banner.className = 'px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 text-center';
+        banner.textContent = `⚠️ Gaya Angkat F₂ (${Math.round(pascalState.f2).toLocaleString('id-ID')} N) < Berat Beban (${pascalState.loadW.toLocaleString('id-ID')} N) — Tambah F₁ atau Perlebar A₂!`;
+      }
+    }
+
+    function drawPascal() {
+      const canvas = document.getElementById('canvas-pascal');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      pascalState.liftOffset += (pascalState.targetLift - pascalState.liftOffset) * 0.08;
+
+      const baseBottom = h - 40;
+      const leftX = w * 0.22;
+      const leftW = Math.max(36, 30 + pascalState.a1 * 180);
+      const rightX = w * 0.68;
+      const rightW = Math.max(95, 85 + pascalState.a2 * 45);
+
+      const basePistonY = h * 0.56;
+      const p2Y = basePistonY - pascalState.liftOffset;
+      const p1Y = basePistonY + pascalState.liftOffset * 1.3;
+
+      ctx.fillStyle = 'rgba(20, 184, 166, 0.55)';
+      ctx.beginPath();
+      ctx.moveTo(leftX - leftW / 2, p1Y);
+      ctx.lineTo(leftX - leftW / 2, baseBottom);
+      ctx.lineTo(rightX + rightW / 2, baseBottom);
+      ctx.lineTo(rightX + rightW / 2, p2Y);
+      ctx.lineTo(rightX - rightW / 2, p2Y);
+      ctx.lineTo(rightX - rightW / 2, baseBottom - 45);
+      ctx.lineTo(leftX + leftW / 2, baseBottom - 45);
+      ctx.lineTo(leftX + leftW / 2, p1Y);
+      ctx.closePath();
+      ctx.fill();
+
+      const arrowY = baseBottom - 22;
+      drawArrow(ctx, leftX, arrowY, (leftX + rightX) / 2, arrowY, '#99f6e4', 2);
+      drawArrow(ctx, (leftX + rightX) / 2, arrowY, rightX, arrowY, '#99f6e4', 2);
+      drawArrow(ctx, rightX, arrowY, rightX, p2Y + 14, '#99f6e4', 2);
+
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(leftX - leftW / 2, h * 0.28);
+      ctx.lineTo(leftX - leftW / 2, baseBottom);
+      ctx.lineTo(rightX + rightW / 2, baseBottom);
+      ctx.lineTo(rightX + rightW / 2, h * 0.28);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(leftX + leftW / 2, h * 0.28);
+      ctx.lineTo(leftX + leftW / 2, baseBottom - 45);
+      ctx.lineTo(rightX - rightW / 2, baseBottom - 45);
+      ctx.lineTo(rightX - rightW / 2, h * 0.28);
+      ctx.stroke();
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(leftX - leftW / 2 + 2, p1Y - 12, leftW - 4, 12);
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(leftX - 5, p1Y - 50, 10, 38);
+
+      drawArrow(ctx, leftX, p1Y - 95, leftX, p1Y - 54, '#38bdf8', 3.5);
+      ctx.fillStyle = '#7dd3fc';
+      ctx.font = 'bold 12px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`F₁ = ${pascalState.f1} N`, leftX, p1Y - 104);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '11px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(`A₁ = ${fmt(pascalState.a1, 2)} m²`, leftX, baseBottom + 20);
+
+      ctx.fillStyle = '#2dd4bf';
+      ctx.fillRect(rightX - rightW / 2 + 2, p2Y - 14, rightW - 4, 14);
+
+      const boxW = Math.min(rightW * 0.82, 120);
+      const boxH = 44;
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(rightX - boxW / 2, p2Y - 14 - boxH, boxW, boxH, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 11px "JetBrains Mono", monospace';
+      ctx.fillText(`W = ${pascalState.loadW.toLocaleString('id-ID')} N`, rightX, p2Y - 14 - boxH / 2 + 4);
+
+      drawArrow(ctx, rightX + rightW / 2 + 18, p2Y + 15, rightX + rightW / 2 + 18, p2Y - 40, '#2dd4bf', 3.5);
+      ctx.fillStyle = '#5eead4';
+      ctx.textAlign = 'left';
+      ctx.fillText(`F₂ = ${Math.round(pascalState.f2).toLocaleString('id-ID')} N`, rightX + rightW / 2 + 26, p2Y - 10);
+
+      ctx.fillStyle = '#cbd5e1';
+      ctx.textAlign = 'center';
+      ctx.font = '11px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(`A₂ = ${fmt(pascalState.a2, 2)} m²`, rightX, baseBottom + 20);
+    }
+
+    // =========================================================================
+    // 5. SIMULATION C: HUKUM ARCHIMEDES
+    // =========================================================================
+    const archState = {
+      rhoB: 500,
+      volB: 0.05,
+      rhoF: 1000,
+      g: 9.8,
+      submergedFrac: 0.5
+    };
+
+    function selectArchMaterial() {
+      const val = parseFloat(document.getElementById('arch-material').value);
+      document.getElementById('arch-rhob').value = val;
+      updateArchParams();
+    }
+
+    function updateArchParams() {
+      archState.rhoB = parseFloat(document.getElementById('arch-rhob').value);
+      archState.volB = parseFloat(document.getElementById('arch-vol').value);
+      archState.rhoF = parseFloat(document.getElementById('arch-fluid').value);
+
+      document.getElementById('val-arch-rhob').textContent = `${archState.rhoB.toLocaleString('id-ID')} kg/m³`;
+      document.getElementById('val-arch-vol').textContent = `${fmt(archState.volB, 3)} m³ (${Math.round(archState.volB * 1000)} L)`;
+
+      const weight = archState.rhoB * archState.volB * archState.g;
+      let subFrac = archState.rhoB / archState.rhoF;
+      if (subFrac > 1) subFrac = 1;
+      archState.submergedFrac = subFrac;
+
+      const vSub = archState.volB * subFrac;
+      const fa = archState.rhoF * archState.g * vSub;
+
+      document.getElementById('out-arch-w').textContent = `${fmt(weight, 1)} N`;
+      document.getElementById('out-arch-fa').textContent = `${fmt(fa, 1)} N`;
+      document.getElementById('out-arch-sub').textContent = `${Math.round(subFrac * 100)}%`;
+
+      const badge = document.getElementById('arch-state-badge');
+      const desc = document.getElementById('desc-archimedes');
+
+      if (archState.rhoB < archState.rhoF - 15) {
+        badge.textContent = 'TERAPUNG (ρb < ρf)';
+        badge.className = 'absolute top-3 right-3 px-3 py-1.5 rounded-xl text-xs font-bold border bg-emerald-500/20 text-emerald-300 border-emerald-400/40';
+        desc.innerHTML = `<strong>Benda Terapung!</strong> Karena kepadatan benda (<strong>${archState.rhoB} kg/m³</strong>) lebih ringan dari cairan (<strong>${archState.rhoF} kg/m³</strong>), benda hanya perlu mencelupkan ${Math.round(subFrac * 100)}% bagian tubuhnya agar panah hijau (Fₐ) sama kuat dengan panah merah (W).`;
+      } else if (Math.abs(archState.rhoB - archState.rhoF) <= 15) {
+        badge.textContent = 'MELAYANG (ρb ≈ ρf)';
+        badge.className = 'absolute top-3 right-3 px-3 py-1.5 rounded-xl text-xs font-bold border bg-sky-500/20 text-sky-300 border-sky-400/40';
+        desc.innerHTML = `<strong>Benda Melayang!</strong> Kepadatan benda hampir sama persis dengan cairan (<strong>ρb ≈ ρf</strong>). Seluruh bagian benda masuk ke cairan dan diam seimbang di tengah-tengah (panah hijau Fₐ = panah merah W).`;
+      } else {
+        badge.textContent = 'TENGGELAM (ρb > ρf)';
+        badge.className = 'absolute top-3 right-3 px-3 py-1.5 rounded-xl text-xs font-bold border bg-rose-500/20 text-rose-300 border-rose-400/40';
+        desc.innerHTML = `<strong>Benda Tenggelam!</strong> Karena kepadatan benda (<strong>${archState.rhoB} kg/m³</strong>) lebih berat dari cairan (<strong>${archState.rhoF} kg/m³</strong>), panah merah (W) menang melawan panah hijau (Fₐ) sehingga benda jatuh ke dasar bejana.`;
+      }
+    }
+
+    function drawArchimedes() {
+      const canvas = document.getElementById('canvas-archimedes');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const beakerW = Math.min(260, w * 0.48);
+      const beakerX = (w - beakerW) / 2;
+      const beakerTop = 55;
+      const beakerBottom = h - 40;
+      const beakerH = beakerBottom - beakerTop;
+
+      const blockSize = 58 + archState.volB * 360;
+      const blockX = (w - blockSize) / 2;
+
+      const baseWaterLevelY = beakerTop + beakerH * 0.34;
+      const risePixels = archState.submergedFrac * (archState.volB * 380);
+      const waterLevelY = baseWaterLevelY - risePixels;
+
+      let targetBlockTopY;
+      if (archState.rhoB < archState.rhoF - 15) {
+        targetBlockTopY = waterLevelY - (1 - archState.submergedFrac) * blockSize;
+      } else if (Math.abs(archState.rhoB - archState.rhoF) <= 15) {
+        targetBlockTopY = (waterLevelY + beakerBottom - blockSize) / 2;
+      } else {
+        targetBlockTopY = beakerBottom - blockSize - 2;
+      }
+
+      if (typeof archState.animY !== 'number') archState.animY = targetBlockTopY;
+      archState.animY += (targetBlockTopY - archState.animY) * 0.1;
+
+      const fluidColor = archState.rhoF === 800 ? '#facc15' : (archState.rhoF === 13600 ? '#94a3b8' : '#0ea5e9');
+      ctx.fillStyle = hexToRgba(fluidColor, 0.48);
+      ctx.fillRect(beakerX, waterLevelY, beakerW, beakerBottom - waterLevelY);
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(beakerX - 18, baseWaterLevelY);
+      ctx.lineTo(beakerX + beakerW + 18, baseWaterLevelY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('Permukaan awal', beakerX - 22, baseWaterLevelY + 3);
+
+      ctx.fillStyle = archState.rhoB <= 600 ? '#b45309' : (archState.rhoB <= 1100 ? '#38bdf8' : '#475569');
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(blockX, archState.animY, blockSize, blockSize, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 11px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`ρb=${archState.rhoB}`, w / 2, archState.animY + blockSize / 2 + 4);
+
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(beakerX, beakerTop);
+      ctx.lineTo(beakerX, beakerBottom);
+      ctx.lineTo(beakerX + beakerW, beakerBottom);
+      ctx.lineTo(beakerX + beakerW, beakerTop);
+      ctx.stroke();
+
+      const cx = w / 2;
+      const cy = archState.animY + blockSize / 2;
+      const weight = archState.rhoB * archState.volB * archState.g;
+      const fa = archState.rhoF * archState.g * (archState.volB * archState.submergedFrac);
+
+      const scale = 0.032;
+      const wLen = Math.min(85, Math.max(24, weight * scale));
+      const faLen = Math.min(85, Math.max(20, fa * scale));
+
+      drawArrow(ctx, cx - 10, cy, cx - 10, cy + wLen, '#fb7185', 3.5);
+      ctx.fillStyle = '#fda4af';
+      ctx.font = 'bold 11px "JetBrains Mono", monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(`W = ${fmt(weight, 0)} N`, cx - 18, cy + wLen);
+
+      drawArrow(ctx, cx + 10, cy, cx + 10, cy - faLen, '#34d399', 3.5);
+      ctx.fillStyle = '#6ee7b7';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Fₐ = ${fmt(fa, 0)} N`, cx + 18, cy - faLen + 6);
+    }
+
+    // =========================================================================
+    // 6. SIMULATION D: FLUIDA DINAMIS (VENTURI & BERNOULLI)
+    // =========================================================================
+    const dinamisState = {
+      a1: 80,
+      a2: 30,
+      v1: 1.5,
+      rho: 1000,
+      p1: 150000,
+      particles: []
+    };
+
+    function initDinamisParticles() {
+      dinamisState.particles = [];
+      for (let i = 0; i < 42; i++) {
+        dinamisState.particles.push({
+          xFrac: Math.random(),
+          yNorm: (Math.random() * 2 - 1) * 0.72
+        });
+      }
+    }
+
+    function updateDinamisParams() {
+      dinamisState.a1 = parseFloat(document.getElementById('din-a1').value);
+      dinamisState.a2 = parseFloat(document.getElementById('din-a2').value);
+      dinamisState.v1 = parseFloat(document.getElementById('din-v1').value);
+      dinamisState.rho = parseFloat(document.getElementById('din-fluid').value);
+
+      document.getElementById('val-din-a1').textContent = `${dinamisState.a1} cm²`;
+      document.getElementById('val-din-a2').textContent = `${dinamisState.a2} cm²`;
+      document.getElementById('val-din-v1').textContent = `${fmt(dinamisState.v1, 1)} m/s`;
+
+      const a1m2 = dinamisState.a1 * 1e-4;
+      const qm3 = a1m2 * dinamisState.v1;
+      const v2 = dinamisState.v1 * (dinamisState.a1 / dinamisState.a2);
+      const dp = 0.5 * dinamisState.rho * (v2 * v2 - dinamisState.v1 * dinamisState.v1);
+      const p2 = dinamisState.p1 - dp;
+
+      document.getElementById('out-din-q').textContent = `${fmt(qm3 * 1000, 2)} L/s`;
+      document.getElementById('out-din-qm3').textContent = `${fmt(qm3, 4)} m³/s`;
+      document.getElementById('out-din-v2').textContent = `${fmt(v2, 2)} m/s`;
+      document.getElementById('out-din-ratio').textContent = `${fmt(v2 / dinamisState.v1, 2)}× dari v₁`;
+      document.getElementById('out-din-p1').textContent = `${fmt(dinamisState.p1 / 1000, 1)} kPa`;
+      document.getElementById('out-din-p2').textContent = `${fmt(p2 / 1000, 1)} kPa`;
+      document.getElementById('out-din-dp').textContent = `ΔP = -${fmt(dp / 1000, 2)} kPa`;
+    }
+
+    function getPipeHalfHeightAt(xFrac, r1, r2) {
+      if (xFrac < 0.25) return r1;
+      if (xFrac > 0.75) return r1;
+      if (xFrac >= 0.38 && xFrac <= 0.62) return r2;
+      if (xFrac < 0.38) {
+        const t = (xFrac - 0.25) / 0.13;
+        const smooth = t * t * (3 - 2 * t);
+        return r1 + (r2 - r1) * smooth;
+      } else {
+        const t = (xFrac - 0.62) / 0.13;
+        const smooth = t * t * (3 - 2 * t);
+        return r2 + (r1 - r2) * smooth;
+      }
+    }
+
+    function drawDinamis() {
+      const canvas = document.getElementById('canvas-dinamis');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const pipeLeft = 28;
+      const pipeRight = w - 28;
+      const pipeLen = pipeRight - pipeLeft;
+      const centerY = h * 0.66;
+
+      const r1 = 22 + Math.sqrt(dinamisState.a1) * 4.4;
+      const r2 = 14 + Math.sqrt(dinamisState.a2) * 4.4;
+
+      ctx.beginPath();
+      const segs = 80;
+      for (let i = 0; i <= segs; i++) {
+        const xf = i / segs;
+        const px = pipeLeft + xf * pipeLen;
+        const py = centerY - getPipeHalfHeightAt(xf, r1, r2);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      for (let i = segs; i >= 0; i--) {
+        const xf = i / segs;
+        const px = pipeLeft + xf * pipeLen;
+        const py = centerY + getPipeHalfHeightAt(xf, r1, r2);
+        ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.28)';
+      ctx.fill();
+
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      for (let i = 0; i <= segs; i++) {
+        const xf = i / segs;
+        const px = pipeLeft + xf * pipeLen;
+        const py = centerY - getPipeHalfHeightAt(xf, r1, r2);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      ctx.beginPath();
+      for (let i = 0; i <= segs; i++) {
+        const xf = i / segs;
+        const px = pipeLeft + xf * pipeLen;
+        const py = centerY + getPipeHalfHeightAt(xf, r1, r2);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      const v2 = dinamisState.v1 * (dinamisState.a1 / dinamisState.a2);
+      const dp = 0.5 * dinamisState.rho * (v2 * v2 - dinamisState.v1 * dinamisState.v1);
+      const p2 = dinamisState.p1 - dp;
+
+      const m1X = pipeLeft + 0.16 * pipeLen;
+      const m1TopPipe = centerY - r1;
+      const m2X = pipeLeft + 0.50 * pipeLen;
+      const m2TopPipe = centerY - r2;
+
+      const tubeTopY = 34;
+      const h1Col = Math.max(24, (dinamisState.p1 / 160000) * (m1TopPipe - tubeTopY - 12));
+      const h2Col = Math.max(10, (p2 / 160000) * (m2TopPipe - tubeTopY - 12));
+
+      drawManometer(ctx, m1X, m1TopPipe, tubeTopY, h1Col, '#38bdf8', `P₁ = ${fmt(dinamisState.p1 / 1000, 1)} kPa`);
+      drawManometer(ctx, m2X, m2TopPipe, tubeTopY, h2Col, '#fb7185', `P₂ = ${fmt(p2 / 1000, 1)} kPa`);
+
+      dinamisState.particles.forEach(p => {
+        const localR = getPipeHalfHeightAt(p.xFrac, r1, r2);
+        const localSpeedMult = Math.pow(r1 / localR, 2);
+        p.xFrac += 0.0022 * dinamisState.v1 * localSpeedMult;
+        if (p.xFrac > 1) {
+          p.xFrac -= 1;
+        }
+
+        const px = pipeLeft + p.xFrac * pipeLen;
+        const py = centerY + p.yNorm * (localR - 5);
+
+        const isFast = localSpeedMult > 1.6;
+        ctx.fillStyle = isFast ? '#fbbf24' : '#7dd3fc';
+        ctx.beginPath();
+        ctx.arc(px, py, isFast ? 3.8 : 3.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.fillStyle = '#bae6fd';
+      ctx.font = 'bold 11px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`v₁ = ${fmt(dinamisState.v1, 1)} m/s`, m1X, centerY + r1 + 22);
+      ctx.fillStyle = '#fde68a';
+      ctx.fillText(`v₂ = ${fmt(v2, 2)} m/s`, m2X, centerY + r2 + 22);
+    }
+
+    function drawManometer(ctx, x, pipeTopY, tubeTopY, colHeight, color, label) {
+      const tubeW = 16;
+      ctx.fillStyle = '#09192b';
+      ctx.fillRect(x - tubeW / 2, tubeTopY, tubeW, pipeTopY - tubeTopY + 3);
+
+      ctx.fillStyle = hexToRgba(color, 0.72);
+      ctx.fillRect(x - tubeW / 2 + 2, pipeTopY - colHeight, tubeW - 4, colHeight + 3);
+
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x - tubeW / 2, tubeTopY);
+      ctx.lineTo(x - tubeW / 2, pipeTopY);
+      ctx.moveTo(x + tubeW / 2, tubeTopY);
+      ctx.lineTo(x + tubeW / 2, pipeTopY);
+      ctx.stroke();
+
+      ctx.fillStyle = color;
+      ctx.font = 'bold 11px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x, tubeTopY - 8);
+    }
+
+    // =========================================================================
+    // CANVAS UTILITY FUNCTIONS & MAIN ANIMATION LOOP
+    // =========================================================================
+    function drawArrow(ctx, fromX, fromY, toX, toY, color, lineWidth = 2.5) {
+      const headlen = 8;
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const angle = Math.atan2(dy, dx);
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = lineWidth;
+
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function hexToRgba(hex, alpha) {
+      const clean = hex.replace('#', '');
+      const bigint = parseInt(clean, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function resizeAllCanvases() {
+      const ids = ['canvas-hidrostatis', 'canvas-pascal', 'canvas-archimedes', 'canvas-dinamis'];
+      ids.forEach(id => {
+        const c = document.getElementById(id);
+        if (c && c.parentElement && c.parentElement.clientWidth > 0) {
+          c.width = c.parentElement.clientWidth;
+          c.height = c.parentElement.clientHeight;
+        }
+      });
+    }
+
+    function animationLoop() {
+      if (activeMainTab === 'statis') {
+        if (activeStatisSub === 'hidrostatis') drawHidrostatis();
+        else if (activeStatisSub === 'pascal') drawPascal();
+        else if (activeStatisSub === 'archimedes') drawArchimedes();
+      } else if (activeMainTab === 'dinamis') {
+        drawDinamis();
+      }
+      requestAnimationFrame(animationLoop);
+    }
+
+    // =========================================================================
+    // 7. INTERACTIVE QUIZ BANK (20 QUESTIONS WITH RICH STEP-BY-STEP SOLUTIONS)
+    // =========================================================================
+    const rawQuizQuestions = [
+      // --- KELOMPOK 1: KONSEP & LOGIKA AWAM (8 SOAL) ---
+      {
+        category: 'awam',
+        level: 'Konsep Dasar',
+        topic: 'Pengertian Fluida',
+        q: 'Manakah di antara kelompok benda berikut yang SEMUANYA termasuk ke dalam kategori fluida?',
+        options: [
+          'Es batu, kayu jati, dan besi beton',
+          'Air mineral, minyak goreng, dan udara di dalam ruangan',
+          'Pasir pantai, tepung terigu, dan gula pasir',
+          'Kaca jendela, air laut, dan uap air'
+        ],
+        correct: 1,
+        concept: 'Fluida adalah segala jenis zat yang dapat mengalir dan bentuknya selalu berubah mengikuti wadahnya, yaitu zat cair dan zat gas.',
+        steps: '1. Cek kelompok A: Es batu, kayu, dan besi semuanya zat padat yang kaku (bukan fluida).\n2. Cek kelompok B: Air mineral & minyak goreng adalah zat cair, sedangkan udara adalah zat gas. Keduanya bisa mengalir sehingga semuanya termasuk fluida.\n3. Cek kelompok C: Pasir, tepung, dan gula tampak bisa dituang, tetapi tiap butirannya tetaplah zat padat kaku.\n4. Cek kelompok D: Kaca adalah zat padat, jadi bukan fluida.',
+        trap: 'Banyak pemula mengira fluida hanyalah benda cair (seperti air), padahal gas dan udara juga merupakan fluida! Selain itu, butiran padat seperti pasir atau gula bukan fluida.'
+      },
+      {
+        category: 'awam',
+        level: 'Konsep Dasar',
+        topic: 'Fluida Statis vs Dinamis',
+        q: 'Peristiwa manakah yang termasuk contoh penerapan FLUIDA STATIS (fluida diam)?',
+        options: [
+          'Air yang menyemprot kencang dari ujung selang saat dipencet',
+          'Angin kencang yang mengangkat sayap pesawat terbang ke langit',
+          'Minyak rem di dalam pipa tertutup yang meneruskan tekanan saat pedal rem mobil diinjak',
+          'Aliran air sungai yang memutar kincir air pembangkit listrik'
+        ],
+        correct: 2,
+        concept: 'Fluida statis mempelajari sifat cairan atau gas yang berada dalam keadaan diam/tenang di dalam wadah atau ruang tertutup (seperti hukum Pascal dan gaya apung).',
+        steps: '1. Pilihan A (air menyemprot dari selang) melibatkan aliran air bergerak → Fluida Dinamis.\n2. Pilihan B (angin melewati sayap pesawat) melibatkan aliran udara cepat → Fluida Dinamis.\n3. Pilihan C (minyak rem hidrolik) menggunakan cairan dalam ruang tertutup untuk meneruskan tekanan sesuai Hukum Pascal → Fluida Statis.\n4. Pilihan D (aliran sungai memutar kincir) melibatkan air mengalir → Fluida Dinamis.',
+        trap: 'Meski pedal rem ditekan sedikit, prinsip kerjanya memakai tekanan cairan di ruang tertutup (Hukum Pascal) yang merupakan bagian inti dari Fluida Statis.'
+      },
+      {
+        category: 'awam',
+        level: 'Konsep Dasar',
+        topic: 'Tekanan dalam Kehidupan Sehari-hari',
+        q: 'Mengapa berjalan di atas tanah berlumpur dengan memakai sepatu hak tinggi (stiletto) jauh lebih mudah amblas dibandingkan memakai sepatu olahraga yang alasnya lebar?',
+        options: [
+          'Karena sepatu hak tinggi terbuat dari bahan yang jauh lebih berat daripada sepatu olahraga',
+          'Karena seluruh berat tubuh terpusat pada ujung hak yang luas permukaannya sangat kecil sehingga tekanannya besar',
+          'Karena sepatu olahraga memiliki gaya gravitasi yang lebih kecil saat menyentuh lumpur',
+          'Karena lumpur memberikan gaya apung lebih besar pada sepatu hak tinggi'
+        ],
+        correct: 1,
+        concept: 'Tekanan (P = F / A) berbanding terbalik dengan luas bidang tekan (A). Dengan gaya berat tubuh (F) yang sama, makin kecil luas permukaan yang menyentuh tanah, makin besar tekanannya.',
+        steps: '1. Berat tubuh pemakai sepatu (gaya F) bernilai tetap.\n2. Ujung sepatu hak tinggi memiliki luas permukaan (A) yang sangat kecil dibandingkan sol sepatu olahraga yang lebar.\n3. Karena P = F dibagi A, pembagi yang sangat kecil menghasilkan tekanan (P) yang sangat besar sehingga hak sepatu menembus lumpur.',
+        trap: 'Bukan berat sepatunya yang membuat amblas, melainkan sempitnya luas permukaan hak sepatu yang memusatkan seluruh berat badan ke satu titik kecil.'
+      },
+      {
+        category: 'awam',
+        level: 'Konsep Dasar',
+        topic: 'Tekanan Hidrostatis',
+        q: 'Jika kamu melihat bangunan dinding bendungan air raksasa (waduk), mengapa bagian dinding paling bawah selalu dibuat jauh lebih tebal daripada bagian atasnya?',
+        options: [
+          'Agar bagian atas terlihat lebih indah dan hemat cat',
+          'Karena tekanan air makin ke dasar bendungan makin besar akibat berat tumpukan air di atasnya',
+          'Karena air di bagian permukaan lebih berat daripada air di bagian dasar',
+          'Agar ikan-ikan di dasar bendungan tidak menabrak dinding'
+        ],
+        correct: 1,
+        concept: 'Tekanan hidrostatis (Pₕ = ρ · g · h) bertambah besar seiring bertambahnya kedalaman (h) dari permukaan air.',
+        steps: '1. Di bagian atas bendungan (kedalaman h kecil), tekanan air masih lemah sehingga dinding tipis sudah cukup menahannya.\n2. Di bagian dasar bendungan (kedalaman h sangat besar), seluruh tumpukan air dari atas menekan dinding dengan gaya yang luar biasa besar.\n3. Oleh karena itu, dinding dasar harus dibuat sangat tebal agar tidak jebol.',
+        trap: 'Ingat analogi tumpukan buku di atas tangan: makin ke bawah, tumpukan air di atasnya makin banyak sehingga tekanannya makin besar.'
+      },
+      {
+        category: 'awam',
+        level: 'Konsep Dasar',
+        topic: 'Hukum Pokok Hidrostatika',
+        q: 'Tiga buah gelas memiliki bentuk berbeda: Gelas A lurus seperti tabung, Gelas B melebar ke atas seperti mangkuk, dan Gelas C menyempit ke atas seperti kerucut. Ketiganya diisi air hingga ketinggian 15 cm. Bagaimana tekanan air di dasar ketiga gelas tersebut?',
+        options: [
+          'Gelas B paling besar karena menampung air paling banyak',
+          'Gelas C paling besar karena airnya tertekan dinding yang menyempit',
+          'Ketiga gelas memiliki tekanan hidrostatis yang SAMA BESAR di dasarnya',
+          'Gelas A paling besar karena bentuknya paling tegak'
+        ],
+        correct: 2,
+        concept: 'Tekanan hidrostatis (Pₕ = ρ · g · h) hanya bergantung pada jenis cairan (ρ), gravitasi (g), dan kedalaman vertikal (h)—sama sekali tidak dipengaruhi bentuk wadah maupun volume total air.',
+        steps: '1. Ketiga gelas berisi cairan yang sama (air, ρ sama).\n2. Ketiganya berada di tempat yang sama (gravitasi g sama).\n3. Tinggi permukaan air di ketiganya sama persis (h = 15 cm).\n4. Karena nilai ρ, g, dan h ketiganya sama, maka tekanan di dasar ketiganya pasti sama besar!',
+        trap: 'Ini adalah "Paradoks Hidrostatika". Jangan tertipu oleh volume air yang lebih banyak di gelas yang lebar—tekanan di dasar hanya ditentukan oleh tinggi vertikal cairan.'
+      },
+      {
+        category: 'awam',
+        level: 'Konsep Dasar',
+        topic: 'Hukum Archimedes',
+        q: 'Sebuah kapal pesiar yang terbuat dari puluhan ribu ton baja dapat mengapung di lautan, sedangkan sebuah paku baja kecil seberat 5 gram langsung tenggelam saat dijatuhkan ke air. Mengapa demikian?',
+        options: [
+          'Karena air laut memiliki suhu lebih dingin daripada air tawar',
+          'Karena lambung kapal dibuat berongga luas berisi udara sehingga kepadatan rata-rata kapal lebih kecil dari air laut',
+          'Karena mesin kapal terus mendorong air ke bawah agar tidak tenggelam',
+          'Karena paku baja tidak mengalami gaya apung sama sekali'
+        ],
+        correct: 1,
+        concept: 'Benda mengapung jika massa jenis rata-rata benda lebih kecil daripada massa jenis fluida (ρbenda < ρfluida), bukan ditentukan oleh berat total benda.',
+        steps: '1. Paku baja adalah logam padat tanpa rongga udara, sehingga massa jenisnya ~7.850 kg/m³ (jauh lebih padat dari air 1.000 kg/m³) → tenggelam.\n2. Kapal baja dirancang berongga sangat luas berisi udara di dalamnya.\n3. Ketika total massa kapal dibagi dengan volume totalnya yang sangat besar (baja + ruang udara), massa jenis rata-ratanya menjadi lebih kecil dari air laut → terapung.',
+        trap: 'Kapal tetap mengapung meskipun mesinnya dimatikan! Jadi mengapungnya kapal murni karena bentuk berongganya yang mengusir air dalam volume sangat besar.'
+      },
+      {
+        category: 'awam',
+        level: 'Konsep Dasar',
+        topic: 'Asas Kontinuitas',
+        q: 'Saat kamu menyiram tanaman dengan selang air, mengapa pancaran air bisa menyemprot jauh lebih jauh ketika kamu menutup sebagian lubang ujung selang dengan ibu jari?',
+        options: [
+          'Karena ibu jari memanaskan air sehingga tekanan uapnya meningkat',
+          'Karena memperkecil luas lubang aliran membuat air terpaksa mengalir lebih cepat agar debit air tetap sama',
+          'Karena ibu jari menambah jumlah volume air di dalam keran',
+          'Karena gaya gravitasi berkurang di ujung selang'
+        ],
+        correct: 1,
+        concept: 'Menurut Asas Kontinuitas (A₁ · v₁ = A₂ · v₂), jika luas penampang aliran diperkecil (A₂ < A₁), maka kecepatan aliran fluida (v₂) akan meningkat drastis.',
+        steps: '1. Keran mengalirkan sejumlah volume air tiap detik (debit Q) secara tetap.\n2. Saat ujung selang ditutup sebagian dengan jempol, luas jalan keluar air (A₂) menjadi jauh lebih sempit.\n3. Agar jumlah air yang keluar tiap detik tidak macet, air harus meluncur keluar dengan kecepatan (v₂) yang jauh lebih tinggi sehingga terpancar lebih jauh.',
+        trap: 'Menutup sebagian ujung selang tidak memperbanyak jumlah air yang keluar (debit Q tetap), melainkan mempercepat laju pancarannya (v).'
+      },
+      {
+        category: 'awam',
+        level: 'Konsep Dasar',
+        topic: 'Asas Bernoulli',
+        q: 'Jika kamu memegang dua lembar kertas HVS secara sejajar dan meniup udara kencang tepat di celah tengah di antara kedua kertas tersebut, apa yang akan terjadi?',
+        options: [
+          'Kedua kertas saling menjauh terdorong tiupan angin',
+          'Kedua kertas justru saling mendekat dan menempel',
+          'Kedua kertas diam tak bergerak sama sekali',
+          'Kedua kertas terangkat lurus ke atas'
+        ],
+        correct: 1,
+        concept: 'Menurut Asas Bernoulli, fluida (udara) yang bergerak dengan kelajuan tinggi memiliki tekanan statis yang lebih rendah dibandingkan udara yang diam di sekitarnya.',
+        steps: '1. Udara yang kamu tiup kencang di celah tengah antara dua kertas bergerak sangat cepat → tekanan udara di tengah turun menjadi rendah.\n2. Udara di sisi luar kiri dan kanan kertas berada dalam keadaan diam → tekanannya tetap normal (lebih tinggi daripada di tengah).\n3. Udara bertekanan lebih tinggi dari luar mendorong kedua kertas masuk ke arah tengah hingga saling mendekat.',
+        trap: 'Secara naluri pemula mengira tiupan akan mendorong kertas menjauh ke samping, padahal aliran udara kencang justru menurunkan tekanan di tengah.'
+      },
+
+      // --- KELOMPOK 2: FLUIDA STATIS & HITUNGAN (7 SOAL) ---
+      {
+        category: 'statis',
+        level: 'Hitungan Dasar',
+        topic: 'Tekanan Hidrostatis',
+        q: 'Sebuah tangki berisi air tawar (ρ = 1.000 kg/m³) dengan percepatan gravitasi g = 10 m/s². Berapakah tekanan hidrostatis yang dialami seekor ikan pada kedalaman 3,5 meter di bawah permukaan air?',
+        options: ['3,5 kPa', '35 kPa', '350 kPa', '136,3 kPa'],
+        correct: 1,
+        concept: 'Tekanan hidrostatis dihitung dengan mengalikan massa jenis cairan (ρ), gravitasi (g), dan kedalaman dari permukaan air (h).',
+        steps: '• Diketahui: ρ = 1.000 kg/m³, g = 10 m/s², h = 3,5 m\n• Rumus: Pₕ = ρ · g · h\n• Hitungan: Pₕ = 1.000 × 10 × 3,5 = 35.000 Pa\n• Ubah ke kilopascal (dibagi 1.000): 35.000 / 1.000 = 35 kPa.',
+        trap: 'Pilihan D (136,3 kPa) adalah tekanan mutlak/total jika ditambah tekanan atmosfer 101,3 kPa. Karena soal hanya menanyakan "tekanan hidrostatis", cukup hitung ρ·g·h saja.'
+      },
+      {
+        category: 'statis',
+        level: 'Hitungan Menengah',
+        topic: 'Tekanan Mutlak (Total)',
+        q: 'Seorang penyelam berada pada kedalaman 10 meter di bawah permukaan danau air tawar (ρ = 1.000 kg/m³, g = 10 m/s²). Jika tekanan udara luar di permukaan danau adalah P₀ = 100 kPa, berapakah tekanan mutlak (total) yang diterima tubuh penyelam?',
+        options: ['100 kPa', '110 kPa', '200 kPa', '1.000 kPa'],
+        correct: 2,
+        concept: 'Tekanan mutlak (total) adalah gabungan dari tekanan udara luar di atas permukaan air (P₀) ditambah tekanan hidrostatis dari berat air (Pₕ).',
+        steps: '1. Hitung dulu tekanan airnya: Pₕ = ρ · g · h = 1.000 × 10 × 10 = 100.000 Pa = 100 kPa.\n2. Tambahkan tekanan udara luar di permukaan: Ptotal = P₀ + Pₕ = 100 kPa + 100 kPa = 200 kPa (atau setara 2 kali tekanan udara normal di darat!).',
+        trap: 'Setiap menyelam 10 meter di dalam air, tekanan bertambah sekitar 1 atm (100 kPa). Jadi di kedalaman 10 meter, penyelam merasakan tekanan 2 kali lipat tekanan udara biasa.'
+      },
+      {
+        category: 'statis',
+        level: 'Hitungan Dasar',
+        topic: 'Hukum Pascal',
+        q: 'Sebuah dongkrak hidrolik memiliki piston kecil berluas 20 cm² dan piston besar berluas 800 cm². Jika gaya tekan sebesar 250 N diberikan pada piston kecil, berapa beban maksimum yang dapat diangkat oleh piston besar?',
+        options: ['1.000 N', '5.000 N', '10.000 N', '20.000 N'],
+        correct: 2,
+        concept: 'Pada dongkrak hidrolik, perbandingan gaya angkat terhadap gaya tekan sama dengan perbandingan luas piston besar terhadap piston kecil (F₂ / F₁ = A₂ / A₁).',
+        steps: '1. Cari dulu kelipatan luas pistonnya: A₂ / A₁ = 800 cm² / 20 cm² = 40 kali lipat.\n2. Kalikan kelipatan tersebut dengan gaya tekan input: F₂ = 40 × 250 N = 10.000 N (setara beban bermassa 1.000 kg atau 1 ton!).',
+        trap: 'Perhatikan bahwa satuan luas A₁ dan A₂ sama-sama cm², jadi langsung bisa dibagi tanpa perlu repot mengubahnya ke m².'
+      },
+      {
+        category: 'statis',
+        level: 'Hitungan Menengah',
+        topic: 'Hukum Pascal (Diameter)',
+        q: 'Sebuah pompa hidrolik memiliki piston kecil berdiameter 2 cm dan piston besar berdiameter 10 cm. Jika piston kecil ditekan dengan gaya 40 N, berapakah gaya angkat yang dihasilkan piston besar?',
+        options: ['200 N', '400 N', '1.000 N', '2.000 N'],
+        correct: 2,
+        concept: 'Hati-hati! Luas lingkaran sebanding dengan kuadrat diameternya (A = ¼πd²). Jadi jika diameter piston 5 kali lebih besar, luasnya menjadi 5² = 25 kali lebih besar!',
+        steps: '1. Bandingkan diameter kedua piston: d₂ / d₁ = 10 cm / 2 cm = 5.\n2. Kuadratkan perbandingan diameternya untuk mendapat perbandingan luas: (5)² = 25 kali lipat.\n3. Hitung gaya angkat: F₂ = F₁ × (d₂ / d₁)² = 40 N × 25 = 1.000 N.',
+        trap: 'Jebakan paling sering: langsung mengalikan 40 N × (10/2) = 200 N. Ingat, 10 cm dan 2 cm adalah DIAMETER, bukan LUAS, sehingga perbandingannya wajib dikuadratkan!'
+      },
+      {
+        category: 'statis',
+        level: 'Hitungan Dasar',
+        topic: 'Hukum Archimedes (Terapung)',
+        q: 'Sebuah balok es (ρb = 900 kg/m³) terapung di atas permukaan air tawar (ρf = 1.000 kg/m³). Berapa persen bagian volume balok es yang tercelup di bawah permukaan air?',
+        options: ['10%', '50%', '90%', '100%'],
+        correct: 2,
+        concept: 'Untuk benda yang terapung seimbang, persentase bagian benda yang tercelup sama dengan perbandingan massa jenis benda dibagi massa jenis cairan (Vcelup / Vtotal = ρb / ρf).',
+        steps: '1. Bagi massa jenis es dengan massa jenis air: ρb / ρf = 900 / 1.000 = 0,90.\n2. Ubah ke persen: 0,90 × 100% = 90% bagian es tercelup di bawah air.\n3. Sisanya (100% - 90% = 10%) muncul di atas permukaan air.',
+        trap: 'Inilah alasan gunung es di lautan sangat berbahaya bagi kapal: 90% massa gunung es tersembunyi di bawah permukaan laut dan hanya 10% puncaknya yang terlihat!'
+      },
+      {
+        category: 'statis',
+        level: 'Hitungan Menengah',
+        topic: 'Hukum Archimedes (Gaya Apung)',
+        q: 'Berat sebuah batu di udara adalah 50 N. Ketika dicelupkan seluruhnya ke dalam air (ρf = 1.000 kg/m³, g = 10 m/s²), beratnya terbaca menjadi 30 N. Berapakah volume batu tersebut?',
+        options: ['0,002 m³ (2 liter)', '0,003 m³ (3 liter)', '0,005 m³ (5 liter)', '0,020 m³ (20 liter)'],
+        correct: 0,
+        concept: 'Selisih berat benda saat ditimbang di udara dan di dalam air adalah besarnya gaya apung (Fₐ) yang mendorong benda ke atas.',
+        steps: '1. Hitung gaya apung air: Fₐ = Wudara − Wair = 50 N − 30 N = 20 N.\n2. Gunakan rumus Fₐ = ρf · g · Vcelup → 20 = 1.000 × 10 × Vcelup.\n3. Vcelup = 20 / 10.000 = 0,002 m³ (karena 1 m³ = 1.000 liter, maka 0,002 m³ = 2 liter).',
+        trap: 'Jangan memakai angka 50 N atau 30 N secara langsung ke rumus gaya apung; yang dipakai adalah selisih keduanya (20 N).'
+      },
+      {
+        category: 'statis',
+        level: 'Konsep Lanjutan',
+        topic: 'Kapilaritas & Meniskus',
+        q: 'Mengapa air dapat merambat naik melalui pembuluh xilem pada batang tumbuhan tinggi hingga mencapai daun, sedangkan air raksa justru turun permukaannya saat dimasukkan ke pipa kaca sempit?',
+        options: [
+          'Massa jenis air lebih kecil daripada massa jenis kaca',
+          'Pada air gaya tarik dengan dinding (adhesi) lebih kuat dari tarik-menarik sesama air (kohesi), sedangkan pada raksa sebaliknya',
+          'Tekanan atmosfer di daun jauh lebih tinggi daripada di akar tumbuhan',
+          'Air memiliki kekentalan (viskositas) yang lebih tinggi daripada air raksa'
+        ],
+        correct: 1,
+        concept: 'Gejala kapilaritas terjadi akibat persaingan antara gaya adhesi (tarik-menarik molekul cairan dengan dinding pipa) dan gaya kohesi (tarik-menarik antar molekul cairan itu sendiri).',
+        steps: '1. Molekul air lebih tertarik menempel pada dinding pembuluh/kaca daripada sesamanya (Adhesi > Kohesi) → air "memanjat" naik di celah sempit.\n2. Sebaliknya, molekul raksa saling tarik sangat kuat dengan sesamanya dan menolak menempel pada kaca (Kohesi > Adhesi) → permukaan raksa melengkung cembung dan turun.',
+        trap: 'Ingat istilahnya: Adhesi = tarik-menarik antar zat BERBEDA (seperti lem/adhesive menempelkan dua benda berbeda); Kohesi = tarik-menarik antar zat SEJENIS.'
+      },
+
+      // --- KELOMPOK 3: FLUIDA DINAMIS & HITUNGAN (5 SOAL) ---
+      {
+        category: 'dinamis',
+        level: 'Hitungan Dasar',
+        topic: 'Debit Aliran',
+        q: 'Sebuah keran air dibuka untuk mengisi tangki berkapasitas 300 liter hingga penuh dalam waktu 1 menit (60 detik). Berapakah debit aliran air dari keran tersebut dalam satuan liter/detik?',
+        options: ['0,2 liter/detik', '5 liter/detik', '180 liter/detik', '300 liter/detik'],
+        correct: 1,
+        concept: 'Debit aliran (Q) adalah banyaknya volume fluida (V) yang mengalir dibagi selang waktu (t) yang dibutuhkan: Q = V / t.',
+        steps: '1. Volume air V = 300 liter.\n2. Waktu pengisian t = 1 menit = 60 detik.\n3. Debit Q = 300 liter / 60 detik = 5 liter/detik.',
+        trap: 'Pastikan satuan waktu diubah dari menit ke detik (1 menit = 60 detik) sebelum membagi volumenya.'
+      },
+      {
+        category: 'dinamis',
+        level: 'Hitungan Menengah',
+        topic: 'Persamaan Kontinuitas',
+        q: 'Air mengalir melalui pipa berdiameter 6 cm dengan kelajuan 2 m/s, lalu memasuki bagian pipa yang menyempit dengan diameter 3 cm. Berapakah kelajuan aliran air di bagian yang sempit tersebut?',
+        options: ['1 m/s', '4 m/s', '8 m/s', '12 m/s'],
+        correct: 2,
+        concept: 'Karena luas penampang lingkaran sebanding dengan kuadrat diameternya (A ∝ d²), kelajuan fluida di pipa sempit adalah v₂ = v₁ × (d₁ / d₂)².',
+        steps: '1. Bandingkan diameter pipa lebar dan pipa sempit: d₁ / d₂ = 6 cm / 3 cm = 2 kali.\n2. Karena luas lingkaran bergantung pada kuadrat diameter, luasnya menyempit menjadi (2)² = 4 kali lebih kecil.\n3. Agar debit tetap sama, air harus bergerak 4 kali lebih cepat: v₂ = 2 m/s × 4 = 8 m/s.',
+        trap: 'Sama seperti soal piston hidrolik, jika diketahui DIAMETER (bukan luas), perbandingannya wajib dikuadratkan!'
+      },
+      {
+        category: 'dinamis',
+        level: 'Hitungan Dasar',
+        topic: 'Teorema Torricelli',
+        q: 'Sebuah tangki air terbuka memiliki lubang kebocoran kecil pada kedalaman 1,25 meter di bawah permukaan air (g = 10 m/s²). Berapakah kelajuan semburan air yang keluar dari lubang tersebut?',
+        options: ['2,5 m/s', '5,0 m/s', '12,5 m/s', '25,0 m/s'],
+        correct: 1,
+        concept: 'Menurut Teorema Torricelli, kelajuan air yang memancar dari lubang tangki pada kedalaman h dari permukaan atas adalah v = √(2 · g · h).',
+        steps: '1. Masukkan nilai g = 10 m/s² dan h = 1,25 m ke rumus: v = √(2 × 10 × 1,25).\n2. Kalikan angka di dalam akar: 2 × 10 × 1,25 = 25.\n3. Tarik akarnya: √25 = 5,0 m/s.',
+        trap: 'Perhatikan bahwa h selalu diukur dari PERMUKAAN AIR ATAS sampai ke lubang bocor, bukan diukur dari lantai!'
+      },
+      {
+        category: 'dinamis',
+        level: 'Konsep Aplikasi',
+        topic: 'Gaya Angkat Sayap Pesawat',
+        q: 'Agar sebuah pesawat terbang dapat terangkat ke udara, bagaimana rancangan bentuk sayap pesawat (airfoil) mengatur aliran udara di sisi atas dan bawah sayap?',
+        options: [
+          'Kecepatan udara di atas sayap lebih lambat sehingga tekanan di atas lebih besar',
+          'Kecepatan udara di atas sayap lebih cepat sehingga tekanan di atas lebih kecil daripada di bawah sayap',
+          'Kecepatan udara di atas dan bawah sayap sama, namun suhu udara di atas lebih dingin',
+          'Tekanan udara di bawah sayap dibuat lebih kecil daripada tekanan di atas sayap'
+        ],
+        correct: 1,
+        concept: 'Sesuai Asas Bernoulli, kelajuan udara yang lebih tinggi di atas sayap menghasilkan tekanan lebih rendah (P_atas < P_bawah), sehingga tekanan udara dari bawah mendorong sayap naik.',
+        steps: '1. Sisi atas sayap pesawat dibuat melengkung cembung sehingga udara yang melewatinya meluncur lebih cepat (v_atas > v_bawah).\n2. Karena udara di atas lebih cepat, tekanannya menjadi lebih rendah (P_atas < P_bawah).\n3. Selisih tekanan (P_bawah − P_atas) dikalikan luas sayap menghasilkan gaya angkat ke atas.',
+        trap: 'Ingat pasangan yang benar: Kecepatan BESAR ↔ Tekanan KECIL; Kecepatan KECIL ↔ Tekanan BESAR.'
+      },
+      {
+        category: 'dinamis',
+        level: 'Konsep Aplikasi',
+        topic: 'Asas Bernoulli di Laut',
+        q: 'Ketika dua buah perahu motor melaju sejajar dan berdekatan dengan kecepatan tinggi di laut, keduanya cenderung saling tertarik mendekat dan berisiko bertabrakan. Mengapa hal ini terjadi?',
+        options: [
+          'Air di celah sempit antara kedua perahu mengalir sangat cepat sehingga tekanan air di tengah turun',
+          'Air di celah antara kedua perahu berhenti mengalir sehingga tekanannya naik drastis',
+          'Gaya tarik gravitasi antar kedua perahu meningkat saat bergerak cepat',
+          'Baling-baling perahu menyedot lambung perahu di sebelahnya'
+        ],
+        correct: 0,
+        concept: 'Fenomena ini sama persis dengan eksperimen meniup dua lembar kertas HVS: aliran fluida cepat di celah sempit menurunkan tekanan di tengah.',
+        steps: '1. Saat dua perahu melaju kencang berdekatan, air laut di celah sempit antara keduanya mengalir relatif jauh lebih cepat dibandingkan air di sisi luar perahu.\n2. Sesuai Asas Bernoulli, tekanan air di celah tengah menjadi lebih rendah daripada tekanan air tenang di sisi luar perahu.\n3. Air bertekanan lebih besar di sisi luar mendorong kedua perahu saling merapat ke tengah.',
+        trap: 'Hal serupa juga terjadi saat dua kereta api berkecepatan tinggi berpapasan atau saat kamu berdiri terlalu dekat di pinggir peron kereta cepat!'
+      }
+    ];
+
+    let quizList = [];
+    let currentQIdx = 0;
+    let quizScore = 0;
+    let quizStreak = 0;
+    let bestStreak = 0;
+    let correctAnswersCount = 0;
+    let questionAnswered = false;
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function restartQuiz() {
+      const filterCat = document.getElementById('quiz-category-filter')
+        ? document.getElementById('quiz-category-filter').value
+        : 'all';
+
+      const filtered = filterCat === 'all'
+        ? rawQuizQuestions
+        : rawQuizQuestions.filter(q => q.category === filterCat);
+
+      quizList = shuffleArray(filtered);
+      currentQIdx = 0;
+      quizScore = 0;
+      quizStreak = 0;
+      bestStreak = 0;
+      correctAnswersCount = 0;
+      questionAnswered = false;
+
+      document.getElementById('quiz-score').textContent = '0';
+      document.getElementById('quiz-streak').textContent = '0 🔥';
+      document.getElementById('quiz-active-box').classList.remove('hidden');
+      document.getElementById('quiz-result-box').classList.add('hidden');
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      questionAnswered = false;
+      const item = quizList[currentQIdx];
+      const total = quizList.length;
+
+      document.getElementById('quiz-progress-text').textContent = `Soal ${currentQIdx + 1} dari ${total}`;
+      document.getElementById('quiz-difficulty-badge').textContent = item.level;
+      document.getElementById('quiz-topic-badge').textContent = item.topic;
+      document.getElementById('quiz-progress-bar').style.width = `${((currentQIdx + 1) / total) * 100}%`;
+      document.getElementById('quiz-question-text').textContent = item.q;
+
+      const expBox = document.getElementById('quiz-explanation-box');
+      expBox.classList.add('hidden');
+      document.getElementById('quiz-next-btn').classList.add('hidden');
+
+      const optsContainer = document.getElementById('quiz-options-container');
+      optsContainer.innerHTML = '';
+
+      const letters = ['A', 'B', 'C', 'D'];
+      item.options.forEach((optText, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-opt-btn w-full text-left p-4 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-slate-200 transition-all flex items-start gap-3.5 group';
+        btn.onclick = () => selectQuizAnswer(idx);
+        btn.innerHTML = `
+          <span class="w-7 h-7 shrink-0 rounded-lg bg-slate-800 group-hover:bg-sky-500/20 group-hover:text-sky-300 border border-slate-700 flex items-center justify-center font-mono text-xs font-bold text-slate-300 transition-colors">
+            ${letters[idx]}
+          </span>
+          <span class="text-sm sm:text-base font-medium pt-0.5">${optText}</span>
+        `;
+        optsContainer.appendChild(btn);
+      });
+    }
+
+    function selectQuizAnswer(selectedIdx) {
+      if (questionAnswered) return;
+      questionAnswered = true;
+
+      const item = quizList[currentQIdx];
+      const isCorrect = selectedIdx === item.correct;
+      const allBtns = document.querySelectorAll('.quiz-opt-btn');
+
+      allBtns.forEach((btn, idx) => {
+        btn.disabled = true;
+        btn.classList.remove('hover:bg-slate-800');
+        if (idx === item.correct) {
+          btn.className = 'quiz-opt-btn w-full text-left p-4 rounded-xl bg-emerald-500/20 border border-emerald-400 text-emerald-100 flex items-start gap-3.5';
+          btn.querySelector('span:first-child').className = 'w-7 h-7 shrink-0 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center font-mono text-xs font-extrabold';
+        } else if (idx === selectedIdx && !isCorrect) {
+          btn.className = 'quiz-opt-btn w-full text-left p-4 rounded-xl bg-rose-500/20 border border-rose-400 text-rose-100 flex items-start gap-3.5';
+          btn.querySelector('span:first-child').className = 'w-7 h-7 shrink-0 rounded-lg bg-rose-500 text-white flex items-center justify-center font-mono text-xs font-extrabold';
+        } else {
+          btn.classList.add('opacity-50');
+        }
+      });
+
+      const expBox = document.getElementById('quiz-explanation-box');
+      const fbTitle = document.getElementById('quiz-feedback-title');
+
+      if (isCorrect) {
+        quizStreak += 1;
+        if (quizStreak > bestStreak) bestStreak = quizStreak;
+        correctAnswersCount += 1;
+        const bonus = Math.min(5, quizStreak - 1) * 2;
+        quizScore += 10 + bonus;
+
+        expBox.className = 'rounded-2xl p-5 sm:p-6 border bg-emerald-950/45 border-emerald-500/40 space-y-4';
+        fbTitle.className = 'flex items-center gap-2 font-extrabold text-base text-emerald-300';
+        fbTitle.textContent = `✅ Jawaban Kamu Benar! (+${10 + bonus} poin) — Simak Pembahasan Rincinya:`;
+      } else {
+        quizStreak = 0;
+        expBox.className = 'rounded-2xl p-5 sm:p-6 border bg-rose-950/45 border-rose-500/40 space-y-4';
+        fbTitle.className = 'flex items-center gap-2 font-extrabold text-base text-rose-300';
+        fbTitle.textContent = '❌ Belum Tepat — Tidak Masalah, Yuk Pelajari Pembahasan Rincinya:';
+      }
+
+      playQuizSound(isCorrect);
+      document.getElementById('quiz-score').textContent = quizScore;
+      document.getElementById('quiz-streak').textContent = `${quizStreak} 🔥`;
+
+      document.getElementById('quiz-exp-concept').textContent = item.concept;
+      document.getElementById('quiz-exp-steps').textContent = item.steps;
+      document.getElementById('quiz-exp-trap').textContent = item.trap;
+      expBox.classList.remove('hidden');
+
+      const nextBtn = document.getElementById('quiz-next-btn');
+      nextBtn.textContent = currentQIdx === quizList.length - 1 ? 'Lihat Hasil Akhir 🏆' : 'Soal Berikutnya →';
+      nextBtn.classList.remove('hidden');
+    }
+
+    function nextQuizQuestion() {
+      playTone(500, 'sine', 0.08, 0.05);
+      currentQIdx += 1;
+      if (currentQIdx < quizList.length) {
+        renderQuizQuestion();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function showQuizResults() {
+      document.getElementById('quiz-active-box').classList.add('hidden');
+      document.getElementById('quiz-result-box').classList.remove('hidden');
+
+      const total = quizList.length;
+      const pct = (correctAnswersCount / total) * 100;
+
+      document.getElementById('res-total-score').textContent = quizScore;
+      document.getElementById('res-correct-count').textContent = `${correctAnswersCount}/${total}`;
+      document.getElementById('res-best-streak').textContent = `${bestStreak} 🔥`;
+
+      const rankBadge = document.getElementById('quiz-rank-badge');
+      const resMsg = document.getElementById('quiz-result-msg');
+
+      if (pct >= 85) {
+        rankBadge.textContent = '🏅 Profesor Hidrodinamika';
+        resMsg.textContent = 'Luar biasa! Kamu sudah menguasai konsep awam maupun langkah perhitungan Fluida Statis & Dinamis dengan sangat mantap.';
+      } else if (pct >= 65) {
+        rankBadge.textContent = '🚀 Fisikawan Muda Andal';
+        resMsg.textContent = 'Kerja bagus! Pemahamanmu sudah sangat solid. Coba eksplorasi simulasi atau ulangi soal untuk meraih nilai sempurna.';
+      } else {
+        rankBadge.textContent = '🌱 Pembelajar Tekun';
+        resMsg.textContent = 'Langkah awal yang hebat! Kamu sudah membaca banyak pembahasan rinci. Coba baca kembali Bab 1–8 di halaman Belajar dari Nol lalu ulangi kuisnya!';
+      }
+    }
+
+    // =========================================================================
+    // 8. INITIALIZATION ON WINDOW LOAD
+    // =========================================================================
+    window.addEventListener('resize', resizeAllCanvases);
+
+    window.onload = function () {
+      updateHidroParams();
+      updatePascalParams();
+      updateArchParams();
+      initDinamisParticles();
+      updateDinamisParams();
+      bindHidroCanvasEvents();
+      restartQuiz();
+      resizeAllCanvases();
+      animationLoop();
+    };
+  </script>
+</body>
+</html>
